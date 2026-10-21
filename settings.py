@@ -103,8 +103,10 @@ SOMA_MIN, SOMA_MAX = 85.0, 101.0
 DIAS_MIN_REGISTRO_DIVULGACAO = 5
 MIN_FONTES_INDEPENDENTES = 2
 
-# --- Agendador ------------------------------------------------------------------
-RUN_SCHEDULER = _env_bool("RUN_SCHEDULER", True)
+# --- Atualização disparada por visitas -------------------------------------------
+# Sem agendador: cada visita verifica se já passou o intervalo mínimo e, se sim, inicia UMA
+# rodada em segundo plano (veja core/gatilho.py).
+AUTO_ATUALIZAR = _env_bool("AUTO_ATUALIZAR", True)
 INTERVALO_PIPELINE_MIN = int(_env("INTERVALO_PIPELINE_MIN", "60"))
 INTERVALO_APURACAO_MIN = int(_env("INTERVALO_APURACAO_MIN", "2"))
 

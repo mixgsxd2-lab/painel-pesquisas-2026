@@ -45,3 +45,4 @@ main{max-width:1280px;margin:0 auto;padding:0 clamp(14px,3vw,28px)}
 [hidden]{display:none!important}
 @media (max-width:860px){.hero{grid-template-columns:1fr;gap:20px}.marca-txt{font-size:.95rem}.menu a{padding:7px 10px;font-size:.85rem}:root{--aviso-h:74px}}
 @media (max-width:560px){.topo-in{flex-wrap:wrap;border-radius:22px;gap:6px}.menu{margin-left:0;width:100%;justify-content:space-between}.menu a{padding:6px 8px}.aviso-fixo p{font-size:.7rem}:root{--aviso-h:80px}}
+.aviso-atualizando{display:flex;align-items:center;justify-content:center;gap:8px;max-width:1280px;margin:10px auto 0;padding:8px 16px;font-size:.85rem;color:rgba(255,255,255,.75)}

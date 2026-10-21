@@ -1,5 +1,5 @@
-"""Ponto de entrada de produção (gunicorn wsgi:app). Liga o agendador junto com o site."""
-from app import app  # noqa: F401
-import scheduler
+"""Ponto de entrada de produção (gunicorn wsgi:app).
 
-scheduler.iniciar()
+Não há agendador: as visitas disparam a atualização (veja core/gatilho.py).
+"""
+from app import app  # noqa: F401

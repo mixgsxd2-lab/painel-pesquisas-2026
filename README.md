@@ -10,7 +10,16 @@ o modo **Apuração** com os resultados oficiais do TSE.
 
 ---
 
-## Como funciona (pipeline a cada 1 hora)
+## Como funciona (atualização disparada por visitas)
+
+Não há agendador. Quando alguém acessa uma página, o site verifica se já passou o intervalo mínimo
+(`INTERVALO_PIPELINE_MIN`, padrão 60 min) desde a última rodada. Se passou, **uma** rodada começa em
+segundo plano — a página responde na hora, sem esperar. Com muitas visitas ao mesmo tempo, uma
+"reserva" gravada no banco (transação `BEGIN IMMEDIATE` no SQLite) garante que só uma rodada rode por vez,
+em qualquer número de threads ou processos; se o processo cair no meio, a reserva expira sozinha.
+Durante a apuração (a partir de 25/10 17h), as visitas também disparam a leitura dos resultados do TSE,
+no máximo a cada `INTERVALO_APURACAO_MIN` (padrão 2 min). Código: `core/gatilho.py`.
+
 
 | Etapa | Arquivo | O que faz |
 |---|---|---|
@@ -44,8 +53,7 @@ disponível no maior número de institutos. Detalhes na página `/metodologia`.
 ```
 painel-pesquisas-2026/
 ├── app.py                 # Flask: rotas, SEO, formulários, admin (renderização no servidor)
-├── wsgi.py                # entrada de produção (gunicorn) — liga o agendador junto
-├── scheduler.py           # APScheduler: pipeline a cada 1h, apuração a cada 2 min (trava de arquivo = 1 agendador só)
+├── wsgi.py                # entrada de produção (gunicorn)
 ├── settings.py            # configurações via variáveis de ambiente / .env
 ├── manage.py              # comandos: init, pipeline, servir, anuncios, demo
 ├── demo_dados.py          # dados FICTÍCIOS só para ver o visual (modo demo, noindex)
@@ -53,7 +61,7 @@ painel-pesquisas-2026/
 │   ├── candidatos.json    # cores por ordem na urna + ajustes opcionais
 │   ├── anuncios.json      # anúncios (imagem, link, datas) — sem mexer no código
 │   └── institutos.json    # domínios oficiais dos institutos (prioridade na busca)
-├── core/                  # banco, dados/médias, anúncios, audiência, SEO, textos, geo
+├── core/                  # banco, dados/médias, gatilho de atualização, anúncios, audiência, SEO, textos, geo
 ├── pipeline/              # coleta, busca, extração, validação, apuração, sitemap, imagens
 ├── templates/             # Jinja (base, macros, páginas)
 ├── static/
@@ -90,7 +98,7 @@ copy .env.example .env          # Linux/Mac: cp .env.example .env  — depois ed
 python manage.py pipeline       # roda UMA rodada agora (coleta TSE, busca, validação…)
 ```
 ```bash
-python manage.py servir         # site em http://127.0.0.1:5000 + agendador ligado
+python manage.py servir         # site em http://127.0.0.1:5000 (as visitas disparam a atualização)
 ```
 
 Ver só o visual com dados **fictícios** (banco separado, faixa de aviso, noindex, pipeline desligado):
@@ -124,24 +132,37 @@ python -m unittest discover -s tests -v
 
 ---
 
-## Publicar (Render ou Railway) com o agendador ligado
+## Publicar no Render
 
-O site e o agendador rodam **no mesmo processo** (`wsgi.py`), porque o SQLite fica num disco que só um
-serviço enxerga. Use **1 worker** do gunicorn (com threads) — a trava de arquivo garante um único agendador.
+### Plano gratuito (configuração atual do `render.yaml`)
+1. No Render: **New → Blueprint** → escolha o repositório `painel-pesquisas-2026`.
+2. Preencha as variáveis marcadas como “sync: false” (`SITE_URL`, `ADMIN_PASSWORD`, `BRAVE_API_KEY`, e-mail…).
+3. Pronto: a primeira visita dispara a primeira rodada (leva alguns minutos; o site mostra
+   “Os dados estão sendo atualizados” no topo enquanto isso).
 
-### Render
-1. Suba o projeto para um repositório no GitHub (sem a pasta `data/` e sem `.env`).
-2. No Render: **New → Blueprint** → escolha o repositório. O `render.yaml` cria o serviço web com
-   **disco persistente** em `/var/data` e `DATA_DIR=/var/data`.
-3. Preencha as variáveis marcadas como “sync: false” (`SITE_URL`, `ADMIN_PASSWORD`, `BRAVE_API_KEY`, e-mail…).
-4. **Use plano pago (Starter ou superior).** O plano gratuito não tem disco persistente e “dorme” sem
-   tráfego — o agendador pararia.
-5. Domínio próprio: Settings → Custom Domains. Atualize `SITE_URL`.
+**Limites do plano gratuito — leia antes:**
+- o serviço “dorme” após ~15 min sem visitas; a próxima visita acorda o site (pode levar ~1 min);
+- **o disco é temporário**: quando o serviço dorme ou reinicia, o banco SQLite começa vazio e é
+  reconstruído pela próxima rodada. As pesquisas voltam a aparecer depois que a rodada termina, mas o
+  **histórico permanente de números publicados não sobrevive a reinícios** neste plano;
+- cada reconstrução gasta consultas da API de busca de novo.
+
+Para histórico permanente e dados sempre prontos, use um plano pago com disco persistente:
+mude no `render.yaml` para `plan: starter`, adicione
+
+```yaml
+    disk:
+      name: dados
+      mountPath: /var/data
+      sizeGB: 1
+```
+
+e a variável `DATA_DIR=/var/data`. Use sempre **1 worker** do gunicorn (com threads).
 
 ### Railway
 1. **New Project → Deploy from GitHub repo**. O `railway.json` define o comando de início e o healthcheck.
 2. Adicione um **Volume** montado em `/data` e defina `DATA_DIR=/data`.
-3. Defina as variáveis do `.env.example`. Mantenha **1 réplica**.
+3. Defina as variáveis do `.env.example`. Mantenha **1 réplica** (o SQLite fica no volume dessa réplica).
 
 Depois do deploy: abra `/healthz` (mostra a última rodada) e `/admin` (status de cada pesquisa e motivos de descarte).
 

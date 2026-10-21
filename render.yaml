@@ -1,23 +1,19 @@
 # Blueprint do Render (https://render.com/docs/blueprint-spec)
-# Um único serviço web: site + agendador no mesmo processo, com disco persistente para o SQLite.
+# Plano GRATUITO: sem agendador — as visitas disparam a atualização (core/gatilho.py).
+# Atenção: no plano gratuito o disco é temporário. Quando o serviço reinicia ou "dorme",
+# o banco SQLite é recriado do zero na próxima visita (veja o README).
 services:
   - type: web
     name: painel-pesquisas-2026
     runtime: python
-    plan: starter            # disco persistente exige plano pago; o plano free "dorme" e para o agendador
+    plan: free
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn wsgi:app --workers 1 --threads 8 --timeout 120 --bind 0.0.0.0:$PORT
     healthCheckPath: /healthz
-    disk:
-      name: dados
-      mountPath: /var/data
-      sizeGB: 1
     envVars:
       - key: PYTHON_VERSION
         value: 3.12.7
-      - key: DATA_DIR
-        value: /var/data
-      - key: RUN_SCHEDULER
+      - key: AUTO_ATUALIZAR
         value: "1"
       - key: SECRET_KEY
         generateValue: true

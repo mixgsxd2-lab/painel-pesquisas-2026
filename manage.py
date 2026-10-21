@@ -2,7 +2,7 @@
 
     python manage.py init            cria/atualiza o banco
     python manage.py pipeline        roda UMA rodada completa do pipeline agora
-    python manage.py servir          sobe o site + agendador (desenvolvimento)
+    python manage.py servir          sobe o site (visitas disparam a atualização)
     python manage.py anuncios        confere os anúncios do config/anuncios.json
     python manage.py demo            sobe uma DEMONSTRAÇÃO com dados FICTÍCIOS (banco separado, noindex)
 """
@@ -17,7 +17,7 @@ def main() -> None:
 
     if cmd == "demo":
         os.environ["DEMO"] = "1"
-        os.environ["RUN_SCHEDULER"] = "0"
+        os.environ["AUTO_ATUALIZAR"] = "0"
         from demo_dados import popular
 
         popular()
@@ -39,9 +39,7 @@ def main() -> None:
         print(rodada())
     elif cmd == "servir":
         from app import app
-        import scheduler
 
-        scheduler.iniciar()
         app.run(port=int(os.environ.get("PORT", 5000)), debug=False, use_reloader=False)
     elif cmd == "anuncios":
         import json

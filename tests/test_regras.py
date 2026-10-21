@@ -9,7 +9,7 @@ from pathlib import Path
 RAIZ = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(RAIZ))
 os.environ.setdefault("DB_PATH", str(Path(tempfile.mkdtemp()) / "teste.db"))
-os.environ["RUN_SCHEDULER"] = "0"
+os.environ["AUTO_ATUALIZAR"] = "0"
 
 from core import db  # noqa: E402
 from core.textutil import protocolo_de_slug, regex_registro, registro_fmt, registro_slug  # noqa: E402
@@ -90,6 +90,30 @@ class Validacao(unittest.TestCase):
         self.assertIn("menos de 5 dias", validar.checar_datas(p))
         p = {"data_registro": "2026-10-08 23:51:00", "data_divulgacao": "2026-10-14"}
         self.assertIsNone(validar.checar_datas(p))
+
+
+class GatilhoPorVisita(unittest.TestCase):
+    def test_uma_reserva_com_muitas_threads(self):
+        import threading
+        import time
+
+        from core import gatilho
+
+        db.init_db()
+        gatilho.liberar("pipeline")
+        db.set_meta("inicio:pipeline", "0")
+        res = []
+        ths = [threading.Thread(target=lambda: res.append(gatilho.reservar("pipeline"))) for _ in range(50)]
+        for t in ths:
+            t.start()
+        for t in ths:
+            t.join()
+        self.assertEqual(sum(res), 1)
+        gatilho.liberar("pipeline")
+        self.assertFalse(gatilho.reservar("pipeline"))  # intervalo mínimo ainda não passou
+        db.set_meta("inicio:pipeline", str(time.time() - 3 * 3600))
+        self.assertTrue(gatilho.reservar("pipeline"))
+        gatilho.liberar("pipeline")
 
 
 class Historico(unittest.TestCase):

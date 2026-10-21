@@ -14,7 +14,7 @@ from flask import (Flask, abort, jsonify, make_response, redirect, render_templa
                    send_from_directory, session, url_for)
 
 import settings
-from core import anuncios, audiencia, dados, db, geo, mailer, seo, textos
+from core import anuncios, audiencia, dados, db, gatilho, geo, mailer, seo, textos
 from core import candidatos as cand_mod
 from core.textutil import (data_br, data_curta, datahora_br, dec, nome_proprio, num, pct, protocolo_de_slug,
                            registro_slug)
@@ -101,10 +101,21 @@ def criar_app() -> Flask:
             "mapa_svg": geo.caminhos_svg,
             "contagem": contagem,
             "atualizado_global": dados.atualizado_em,
+            "atualizando": gatilho.em_andamento,
             "ano_atual": settings.agora().year,
         }
 
     # ------------------------------------------------------------------ middleware
+    @app.before_request
+    def disparar_atualizacao():
+        # visitas a páginas disparam a atualização em segundo plano (nunca bloqueiam a resposta)
+        if request.method == "GET" and not app.testing and not request.path.startswith(
+                ("/static", "/api", "/og", "/geo", "/favicon", "/healthz", "/fragmento")):
+            try:
+                gatilho.ao_visitar()
+            except Exception:
+                app.logger.exception("gatilho de atualização")
+
     @app.after_request
     def depois(resp):
         resp.headers.setdefault("X-Content-Type-Options", "nosniff")
@@ -441,7 +452,8 @@ def criar_app() -> Flask:
 
     @app.route("/healthz")
     def healthz():
-        return jsonify({"ok": True, "ultima_rodada": db.jloads(db.get_meta("ultima_rodada"), {}).get("fim")})
+        return jsonify({"ok": True, "atualizando": gatilho.em_andamento(),
+                        "ultima_rodada": db.jloads(db.get_meta("ultima_rodada"), {}).get("fim")})
 
     # ------------------------------------------------------------------ arquivos gerados
     @app.route("/geo/br-uf.json")

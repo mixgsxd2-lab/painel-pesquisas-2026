@@ -1,4 +1,4 @@
-"""Orquestra uma rodada completa do pipeline (executada a cada hora pelo agendador).
+"""Orquestra uma rodada completa do pipeline (disparada por visitas, no máximo 1x por hora).
 
     python -m pipeline.run
 """
@@ -67,6 +67,9 @@ def rodada() -> dict:
         _etapa("apuracao", apuracao.coletar, resumo)
         _etapa("sitemap", sitemap.gerar, resumo)
         _etapa("og_images", og_images.gerar_todas, resumo)
+        from core import audiencia
+
+        _etapa("limpeza", audiencia.limpar, resumo)
         resumo["fim"] = settings.agora().isoformat()
         db.set_meta("ultima_rodada", resumo)
         log.info("Rodada concluída: %s", resumo)

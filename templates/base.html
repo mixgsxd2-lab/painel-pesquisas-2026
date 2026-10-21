@@ -65,6 +65,7 @@
   </div>
 </header>
 
+{% if atualizando() %}<p class="aviso-atualizando" role="status"><i class="pulso"></i> Os dados estão sendo atualizados com a base do TSE agora. Recarregue em alguns minutos para ver as novidades.</p>{% endif %}
 <main id="conteudo">
 {% block conteudo %}{% endblock %}
 </main>
