@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% import "macros.html" as ui with context %}
+{% block body_class %}pagina-anuncie{% endblock %}
+{% block conteudo %}
+<section class="hero hero-compacto">
+  <div class="hero-txt">
+    {{ ui.migalhas(seo.migalhas) }}
+    <h1>Anuncie no Painel das Pesquisas 2026</h1>
+    <p class="lead">Leve sua marca a quem acompanha as pesquisas do 2º turno — com um visual premium e regras claras.</p>
+    <p class="destaque-neutro">Anunciantes não têm qualquer influência sobre o conteúdo, as pesquisas ou as médias.</p>
+  </div>
+</section>
+
+<section class="secao" aria-labelledby="h-aud">
+  <h2 id="h-aud">Audiência ao vivo</h2>
+  <div class="numeros" id="audiencia" data-api="/api/audiencia">
+    <div class="numero glass"><span class="num grande" data-k="hoje" data-count="{{ aud.hoje }}">{{ aud.hoje|num }}</span><small>visitas hoje</small></div>
+    <div class="numero glass"><span class="num grande" data-k="total" data-count="{{ aud.total }}">{{ aud.total|num }}</span><small>visitas totais</small></div>
+    <div class="numero glass"><span class="num grande" data-k="pico" data-count="{{ aud.pico }}">{{ aud.pico|num }}</span><small>pico de pessoas simultâneas</small></div>
+    <div class="numero glass"><span class="num grande" data-k="agora" data-count="{{ aud.agora }}">{{ aud.agora|num }}</span><small>no site agora</small></div>
+  </div>
+  <p class="nota">Visitantes únicos por dia, sem robôs. Não guardamos IPs.</p>
+</section>
+
+<section class="secao" aria-labelledby="h-form">
+  <h2 id="h-form">Formatos disponíveis</h2>
+  <div class="grade-formatos">
+    <div class="glass formato"><span class="formato-ico" aria-hidden="true">▭</span><h3>Banner de vidro</h3><p>No topo da página Pesquisas, acima dos filtros. 1200×200, WebP.</p></div>
+    <div class="glass formato"><span class="formato-ico" aria-hidden="true">◧</span><h3>Card “Patrocinado”</h3><p>Na gaveta do mapa, sempre abaixo dos dados das pesquisas. 600×300, WebP.</p></div>
+    <div class="glass formato"><span class="formato-ico" aria-hidden="true">◎</span><h3>Selo da Apuração</h3><p>“Apuração apresentada por [marca]” no modo Apuração, em 25/10. Logo 240×80.</p></div>
+  </div>
+  <div class="glass bloco-texto regras-anuncio">
+    <h3>Regras</h3>
+    <ul class="lista-regras">
+      <li>Todo anúncio leva o rótulo <strong>“Publicidade”</strong> bem visível.</li>
+      <li><strong>Proibido anúncio político</strong>: candidatos, partidos, coligações, campanhas, governos ou qualquer conteúdo eleitoral.</li>
+      <li>Anúncios nunca ficam em cima ou no meio dos números das pesquisas.</li>
+      <li>As peças não podem usar o vermelho ou o azul das cores dos candidatos.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="secao" aria-labelledby="h-contato">
+  <h2 id="h-contato">Fale com a gente</h2>
+  <div class="glass bloco-texto form-anuncie">
+    {% if enviado %}
+      <p class="msg-ok" role="status">Mensagem recebida! Retornaremos pelo e-mail informado.</p>
+    {% else %}
+      {% if erro %}<p class="msg-erro" role="alert">{{ erro }}</p>{% endif %}
+      <p class="aviso-politico" role="note"><strong>Atenção:</strong> não aceitamos anúncios políticos ou eleitorais (candidatos, partidos, coligações, campanhas, governos).</p>
+      <form method="post" action="/anuncie" class="form">
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+        <div class="form-linha">
+          <label>Nome<input name="nome" required autocomplete="name" maxlength="200"></label>
+          <label>Empresa<input name="empresa" autocomplete="organization" maxlength="200"></label>
+        </div>
+        <label>E-mail<input name="email" type="email" required autocomplete="email" maxlength="200"></label>
+        <label>Mensagem<textarea name="mensagem" required minlength="10" rows="5" maxlength="4000" placeholder="Conte o que você quer anunciar, formato e período."></textarea></label>
+        <label class="check"><input type="checkbox" name="declaracao" value="1" required> Declaro que o anúncio não tem conteúdo político ou eleitoral.</label>
+        <label class="hp" aria-hidden="true">Site<input name="site" tabindex="-1" autocomplete="off"></label>
+        <button class="btn btn-primario" type="submit">Enviar</button>
+      </form>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

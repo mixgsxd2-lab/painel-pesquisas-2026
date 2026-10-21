@@ -1,0 +1,16 @@
+{
+  "_leia_me": "Os candidatos do 2º turno são descobertos AUTOMATICAMENTE nos resultados oficiais do 1º turno (TSE). Este arquivo só define cores e ajustes opcionais. As cores são atribuídas pela ORDEM NA URNA do 2º turno (campo 'seq' do TSE): o 1º candidato da urna recebe a 1ª cor, o 2º recebe a 2ª.",
+
+  "paleta_por_ordem_na_urna": ["#E5484D", "#3B82F6"],
+  "nomes_das_cores": ["vermelho", "azul"],
+  "cor_sem_dados": "#8A93A6",
+
+  "_ordem": "'tse' = ordem oficial da urna do 2º turno; 'numero' = ordem crescente do número do candidato.",
+  "ordem": "tse",
+
+  "_manual": "Opcional. Preencha SOMENTE se precisar substituir a lista automática. Chave: 'cargo/UF' (ex.: 'governador/RN' ou 'presidente/BR'). Deixe {} para modo automático.",
+  "manual": {},
+
+  "_apelidos": "Opcional. Outras formas de escrever o nome do candidato nas páginas das fontes, por número. Chave: 'cargo/UF/numero'.",
+  "apelidos": {}
+}

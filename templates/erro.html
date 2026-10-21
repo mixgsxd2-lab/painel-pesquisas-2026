@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block conteudo %}
+<section class="glass bloco-texto pagina-erro">
+  <p class="num erro-cod">{{ codigo }}</p>
+  <h1>{{ mensagem }}</h1>
+  <p><a class="btn btn-primario" href="/">Voltar ao mapa</a> <a class="btn btn-texto" href="/pesquisas">Ver pesquisas</a></p>
+</section>
+{% endblock %}

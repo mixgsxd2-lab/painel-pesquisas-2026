@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% import "macros.html" as ui with context %}
+{% block conteudo %}
+<section class="hero hero-compacto">
+  <div class="hero-txt">
+    {{ ui.migalhas(seo.migalhas) }}
+    <h1>Contato e pedidos de correção</h1>
+    <p class="lead">Encontrou um número diferente do divulgado pelo instituto, um dado de registro incorreto ou um link quebrado? Escreva para <a href="mailto:{{ EMAIL_CONTATO }}">{{ EMAIL_CONTATO }}</a> ou use o formulário.</p>
+  </div>
+</section>
+
+<div class="duas-colunas">
+  <section class="glass bloco-texto" id="corrigir" aria-labelledby="h-form">
+    <h2 id="h-form">Pedir correção</h2>
+    {% if enviado %}
+      <p class="msg-ok" role="status">Recebemos sua mensagem. Obrigado! Responderemos pelo e-mail informado.</p>
+    {% else %}
+      {% if erro %}<p class="msg-erro" role="alert">{{ erro }}</p>{% endif %}
+      <form method="post" action="/contato" class="form">
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+        {% if prot %}<input type="hidden" name="pesquisa" value="{{ prot }}">
+          <p class="form-ref">Sobre a pesquisa: <strong>{{ p_ref.instituto if p_ref else '' }} {{ p_ref.registro if p_ref else prot }}</strong></p>{% endif %}
+        <label>Nome (opcional)<input name="nome" autocomplete="name" maxlength="200"></label>
+        <label>E-mail<input name="email" type="email" required autocomplete="email" maxlength="200"></label>
+        <label>O que está errado?<textarea name="mensagem" required minlength="10" maxlength="5000" rows="6" placeholder="Descreva o erro e, se possível, envie o link da fonte oficial."></textarea></label>
+        <label class="hp" aria-hidden="true">Site<input name="site" tabindex="-1" autocomplete="off"></label>
+        <button class="btn btn-primario" type="submit">Enviar pedido de correção</button>
+      </form>
+    {% endif %}
+  </section>
+  <section class="glass bloco-texto" aria-labelledby="h-como">
+    <h2 id="h-como">Como tratamos as correções</h2>
+    <ul class="lista-regras">
+      <li>Conferimos a informação com o registro no TSE e com o site oficial do instituto.</li>
+      <li>Números publicados ficam no histórico permanente, com data, hora e fonte.</li>
+      <li>Não alteramos números por pedido de candidatos, partidos ou anunciantes sem fonte oficial.</li>
+      <li>Para checar um registro, use o botão “Conferir no TSE” em qualquer card: ele abre a consulta oficial PesqEle e copia o número do registro.</li>
+    </ul>
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% import "macros.html" as ui with context %}
+{% block body_class %}pagina-pesquisas{% endblock %}
+{% block conteudo %}
+{{ ui.slot('banner_pesquisas', 'anuncio-topo') }}
+
+<section class="hero hero-compacto">
+  <div class="hero-txt">
+    {{ ui.migalhas(seo.migalhas) }}
+    <h1>Pesquisas e fontes: todas as pesquisas do 2º turno 2026 registradas no TSE</h1>
+    <p class="lead">Cada card traz os números da pesquisa e todos os dados do registro: instituto, contratante, quem pagou, número no TSE, coleta, entrevistas, margem de erro, nível de confiança, abrangência, divulgação e as fontes de onde os números foram tirados.</p>
+    {{ ui.atualizado(seo.modificado) }}
+  </div>
+</section>
+
+<form class="filtros glass" method="get" action="/pesquisas" role="search" aria-label="Filtrar pesquisas">
+  <label>Cargo
+    <select name="cargo">
+      <option value="">Todos</option>
+      <option value="presidente" {% if filtros.cargo == 'presidente' %}selected{% endif %}>Presidente</option>
+      <option value="governador" {% if filtros.cargo == 'governador' %}selected{% endif %}>Governador</option>
+    </select>
+  </label>
+  <label>Abrangência
+    <select name="uf">
+      <option value="">Todas</option>
+      <option value="BR" {% if filtros.uf == 'BR' %}selected{% endif %}>Nacional</option>
+      {% for sigla, info in UFS|dictsort %}<option value="{{ sigla }}" {% if filtros.uf == sigla %}selected{% endif %}>{{ info.nome }}</option>{% endfor %}
+    </select>
+  </label>
+  <label>Instituto
+    <select name="instituto">
+      <option value="">Todos</option>
+      {% for i in institutos %}<option value="{{ i.chave }}" {% if filtros.instituto == i.chave %}selected{% endif %}>{{ i.nome }}</option>{% endfor %}
+    </select>
+  </label>
+  <label>Divulgada de <input type="date" name="de" value="{{ filtros.de or '' }}" min="2026-10-05" max="2026-10-25"></label>
+  <label>até <input type="date" name="ate" value="{{ filtros.ate or '' }}" min="2026-10-05" max="2026-10-25"></label>
+  <div class="filtros-acoes">
+    <button class="btn btn-primario" type="submit">Filtrar</button>
+    <a class="btn btn-texto" href="/pesquisas">Limpar</a>
+  </div>
+</form>
+
+<p class="contador" aria-live="polite"><strong class="num">{{ total }}</strong> pesquisa{{ 's' if total != 1 }} publicada{{ 's' if total != 1 }} · mais recentes primeiro</p>
+
+{% if pesquisas %}
+<div class="grade-cards">{% for p in pesquisas %}{{ ui.card_pesquisa(p, nivel=2) }}{% endfor %}</div>
+{% else %}
+<div class="vazio glass"><p>Nenhuma pesquisa encontrada com esses filtros. Só aparecem pesquisas registradas no TSE que passaram em todas as <a href="/metodologia">validações automáticas</a>.</p></div>
+{% endif %}
+
+{% if paginas > 1 %}
+<nav class="paginacao" aria-label="Paginação">
+  {% if pagina > 1 %}<a class="btn btn-vidro" rel="prev" href="?{{ args_base|urlencode }}{{ '&' if args_base }}p={{ pagina - 1 }}">← Anteriores</a>{% endif %}
+  <span class="num">Página {{ pagina }} de {{ paginas }}</span>
+  {% if pagina < paginas %}<a class="btn btn-vidro" rel="next" href="?{{ args_base|urlencode }}{{ '&' if args_base }}p={{ pagina + 1 }}">Mais antigas →</a>{% endif %}
+</nav>
+{% endif %}
+{% endblock %}

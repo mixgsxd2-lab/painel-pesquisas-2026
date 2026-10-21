@@ -1,0 +1,47 @@
+{
+  "_leia_me": [
+    "Anúncios do site. Edite este arquivo para ligar/desligar anúncios — não é preciso mexer no código.",
+    "Coloque a imagem em static/anuncios/ e informe o caminho em 'imagem' (de preferência .webp).",
+    "Datas no formato AAAA-MM-DD (horário de Brasília). Fora do período, o espaço mostra 'Anuncie aqui'.",
+    "Espaços: 'banner_pesquisas' (topo de /pesquisas, 1200x200), 'gaveta_mapa' (card na gaveta do mapa, 600x300), 'selo_apuracao' (selo no modo Apuração, logo 240x80).",
+    "REGRAS AUTOMÁTICAS: anúncios com conteúdo político/eleitoral são recusados; imagens com muito vermelho ou azul (cores dos candidatos) são recusadas. Recusas ficam em data/logs/anuncios.log."
+  ],
+  "anuncios": [
+    {
+      "ativo": false,
+      "espaco": "banner_pesquisas",
+      "marca": "Exemplo Ltda",
+      "texto_alternativo": "Exemplo Ltda — conheça nossos produtos",
+      "imagem": "anuncios/exemplo-banner.webp",
+      "largura": 1200,
+      "altura": 200,
+      "link": "https://www.exemplo.com.br",
+      "inicio": "2026-10-20",
+      "fim": "2026-10-31"
+    },
+    {
+      "ativo": false,
+      "espaco": "gaveta_mapa",
+      "marca": "Exemplo Ltda",
+      "texto_alternativo": "Exemplo Ltda",
+      "imagem": "anuncios/exemplo-card.webp",
+      "largura": 600,
+      "altura": 300,
+      "link": "https://www.exemplo.com.br",
+      "inicio": "2026-10-20",
+      "fim": "2026-10-31"
+    },
+    {
+      "ativo": false,
+      "espaco": "selo_apuracao",
+      "marca": "Exemplo Ltda",
+      "texto_alternativo": "Exemplo Ltda",
+      "imagem": "anuncios/exemplo-selo.webp",
+      "largura": 240,
+      "altura": 80,
+      "link": "https://www.exemplo.com.br",
+      "inicio": "2026-10-25",
+      "fim": "2026-10-27"
+    }
+  ]
+}

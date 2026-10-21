@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% import "macros.html" as ui with context %}
+{% block body_class %}pagina-mapa{% endblock %}
+{% block conteudo %}
+<section class="hero hero-compacto">
+  <div class="hero-txt">
+    {{ ui.migalhas(seo.migalhas) }}
+    <h1>Pesquisas para {{ cargo_nome }} no 2º turno de 2026 registradas no TSE</h1>
+    <p class="lead">{% if cargo == 'presidente' %}Média das pesquisas nacionais registradas, mapa com as pesquisas estaduais e a lista completa com todos os dados de cada registro.{% else %}Estados com 2º turno para governador, média das pesquisas registradas em cada um e todos os dados de cada registro.{% endif %}</p>
+    {{ ui.atualizado(seo.modificado) }}
+  </div>
+  <div class="hero-lado">{{ ui.contagem_regressiva('glass') }}</div>
+</section>
+
+{{ ui.mapa_bloco(mapa, cargo, alternador=True, modo_alternador='links') }}
+
+{% if cargo == 'presidente' %}
+<section class="secao" aria-labelledby="h-lider">
+  <h2 id="h-lider">Quem lidera as pesquisas para presidente no 2º turno?</h2>
+  {% if apur %}
+    {{ ui.card_apuracao(apur, 'Presidente — Brasil', nivel=3) }}
+  {% endif %}
+  {% if faq %}<p class="resposta">{{ faq[0][1] }}</p>{% endif %}
+  {% if media %}{{ ui.card_media(media, 'Presidente — Brasil (pesquisas nacionais)', nivel=3) }}{% endif %}
+</section>
+
+<section class="secao" aria-labelledby="h-lista">
+  <h2 id="h-lista">Todas as pesquisas nacionais para presidente registradas no TSE</h2>
+  {% if pesquisas %}
+  <div class="grade-cards">{% for p in pesquisas %}{{ ui.card_pesquisa(p, nivel=3) }}{% endfor %}</div>
+  {% else %}<p class="vazio glass">Nenhuma pesquisa nacional publicada até agora. Veja <a href="/metodologia">por que algumas pesquisas não aparecem</a>.</p>{% endif %}
+</section>
+{% else %}
+<section class="secao" aria-labelledby="h-estados">
+  <h2 id="h-estados">Quem lidera as pesquisas para governador nos estados com 2º turno?</h2>
+  {% if ufs2t %}
+  <div class="grade-cards">
+    {% for uf in ufs2t %}
+      {% set m = medias_uf[uf] %}
+      {% if m %}
+        <div class="card-uf">
+          {{ ui.card_media(m, 'Governador — ' ~ (uf|nome_uf) ~ ' (' ~ uf ~ ')', nivel=3, lista_aberta=False) }}
+          <a class="btn btn-texto" href="/governador/{{ uf|lower }}">Página de {{ uf|nome_uf }} →</a>
+        </div>
+      {% else %}
+        <div class="card glass card-vazio">
+          <h3 class="card-tit"><a href="/governador/{{ uf|lower }}">Governador — {{ uf|nome_uf }} ({{ uf }})</a></h3>
+          <p>Sem pesquisas registradas publicadas.</p>
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+  {% else %}<p class="vazio glass">A lista de estados com 2º turno ainda não foi carregada do TSE.</p>{% endif %}
+</section>
+{% endif %}
+
+<section class="secao" aria-labelledby="h-tab">
+  <h2 id="h-tab">{{ 'Presidente' if cargo == 'presidente' else 'Governador' }} por estado</h2>
+  {{ ui.tabela_estados(mapa[cargo], cargo, ufs2t) }}
+</section>
+
+{% if faq %}{{ ui.faq_bloco(faq, pular_primeira=True) }}{% endif %}
+{% endblock %}
+{% block scripts %}{% include "_mapa_scripts.html" %}{% endblock %}

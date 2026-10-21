@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% import "macros.html" as ui with context %}
+{% block body_class %}pagina-mapa pagina-estado{% endblock %}
+{% block conteudo %}
+<section class="hero hero-compacto">
+  <div class="hero-txt">
+    {{ ui.migalhas(seo.migalhas) }}
+    <h1>Pesquisas para {{ cargo_nome }} {{ uf|no_uf }} ({{ uf }}) no 2º turno de 2026</h1>
+    <p class="lead">{% if sem_2_turno %}Não consta 2º turno para governador {{ uf|no_uf }} nos dados oficiais do TSE.{% else %}Todas as pesquisas registradas no TSE para {{ cargo_nome }} {{ uf|no_uf }} no 2º turno, com margem de erro, instituto, contratante e a média das pesquisas registradas.{% endif %}</p>
+    {{ ui.atualizado(seo.modificado) }}
+  </div>
+</section>
+
+{{ ui.mapa_bloco(mapa, cargo, uf_sel=uf, alternador=True, modo_alternador='links') }}
+
+{% if sem_2_turno %}
+<section class="secao" aria-labelledby="h-sem">
+  <h2 id="h-sem">Há 2º turno para governador {{ uf|no_uf }}?</h2>
+  <p class="resposta">{{ faq[0][1] }}</p>
+  <p><a class="btn btn-vidro" href="/presidente/{{ uf|lower }}">Ver pesquisas para presidente {{ uf|no_uf }} →</a></p>
+</section>
+{% else %}
+<section class="secao" aria-labelledby="h-lider">
+  <h2 id="h-lider">{{ faq[0][0] }}</h2>
+  {% if apur %}{{ ui.card_apuracao(apur, (cargo_nome|capitalize) ~ ' — ' ~ (uf|nome_uf), nivel=3) }}{% endif %}
+  <p class="resposta">{{ faq[0][1] }}</p>
+  {% if media %}
+    {{ ui.card_media(media, (cargo_nome|capitalize) ~ ' — ' ~ (uf|nome_uf) ~ ' (' ~ uf ~ ')', nivel=3) }}
+  {% else %}
+    <div class="vazio glass">
+      <p><strong>Sem pesquisas registradas</strong> publicadas para {{ cargo_nome }} {{ uf|no_uf }}. O estado aparece em cinza no mapa — dados nacionais nunca são usados no lugar de dados estaduais.</p>
+      {% if cands %}<p>Candidatos no 2º turno, na ordem da urna: {% for c in cands %}{{ c.nome_urna|nome_proprio }} ({{ c.partido }}){% if not loop.last %} e {% endif %}{% endfor %}.</p>{% endif %}
+    </div>
+  {% endif %}
+</section>
+
+{% if pesquisas %}
+<section class="secao" aria-labelledby="h-todas">
+  <h2 id="h-todas">Todas as pesquisas para {{ cargo_nome }} {{ uf|no_uf }} registradas no TSE</h2>
+  <div class="grade-cards">{% for p in pesquisas %}{{ ui.card_pesquisa(p, nivel=3) }}{% endfor %}</div>
+</section>
+{% endif %}
+{% endif %}
+
+{{ ui.faq_bloco(faq, pular_primeira=True) }}
+
+<section class="secao links-internos" aria-labelledby="h-veja">
+  <h2 id="h-veja">Veja também</h2>
+  <div class="links-grade">
+    <div class="glass links-bloco">
+      <h3>{{ cargo_nome|capitalize }} nos estados vizinhos</h3>
+      <ul>{% for v in vizinhos %}<li><a href="/{{ cargo }}/{{ v|lower }}">Pesquisas para {{ cargo_nome }} {{ v|no_uf }}</a></li>{% endfor %}</ul>
+    </div>
+    <div class="glass links-bloco">
+      <h3>Mais sobre {{ uf|nome_uf }}</h3>
+      <ul>
+        <li><a href="/{{ outro_cargo }}/{{ uf|lower }}">Pesquisas para {{ outro_cargo }} {{ uf|no_uf }}</a></li>
+        <li><a href="/pesquisas?uf={{ uf }}&amp;cargo={{ cargo }}">Lista de pesquisas {{ uf|no_uf }} ({{ cargo_nome }})</a></li>
+        <li><a href="/pesquisas?uf={{ uf }}">Todas as pesquisas com abrangência {{ uf|no_uf }}</a></li>
+      </ul>
+    </div>
+    <div class="glass links-bloco">
+      <h3>Nacional</h3>
+      <ul>
+        <li><a href="/presidente">Pesquisas para presidente no Brasil</a></li>
+        <li><a href="/governador">Estados com 2º turno para governador</a></li>
+        <li><a href="/metodologia">Como a média é calculada</a></li>
+      </ul>
+    </div>
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}{% include "_mapa_scripts.html" %}{% endblock %}

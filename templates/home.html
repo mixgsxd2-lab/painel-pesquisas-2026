@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% import "macros.html" as ui with context %}
+{% block body_class %}pagina-mapa{% endblock %}
+{% block conteudo %}
+<section class="hero">
+  <div class="hero-txt">
+    <p class="sobretitulo">Eleições 2026 · 2º turno · domingo, 25 de outubro</p>
+    <h1>Pesquisas do 2º turno 2026 para presidente e governador registradas no TSE</h1>
+    <p class="lead">Média das pesquisas registradas, mapa por estado e a lista completa com instituto, contratante, margem de erro e fontes — atualizado automaticamente a cada hora.</p>
+    {{ ui.atualizado(seo.modificado) }}
+  </div>
+  <div class="hero-lado">
+    <p class="contagem-tit">Fechamento das urnas e início da apuração</p>
+    {{ ui.contagem_regressiva('glass') }}
+  </div>
+</section>
+
+{{ ui.mapa_bloco(mapa, 'presidente', alternador=True, modo_alternador='local') }}
+
+<div class="painel" data-painel="presidente">
+  <section class="secao" aria-labelledby="h-pres">
+    <h2 id="h-pres">Quem lidera as pesquisas para presidente no 2º turno?</h2>
+    {% if apur_br %}
+      {{ ui.card_apuracao(apur_br, 'Presidente — Brasil', nivel=3) }}
+    {% elif media_br %}
+      <p class="resposta">{% if media_br.lider %}Na média das pesquisas nacionais registradas no TSE e publicadas aqui, {{ media_br.lider.rotulo|nome_proprio }} aparece à frente, com diferença de {{ media_br.vantagem|dec }} ponto(s) ({{ media_br.tipo_nome|lower }}).{% else %}Na média das pesquisas nacionais registradas no TSE e publicadas aqui, os candidatos aparecem com a mesma média.{% endif %} Os dados de cada pesquisa usada estão logo abaixo da média.</p>
+      {{ ui.card_media(media_br, 'Presidente — Brasil (pesquisas nacionais)', nivel=3, lista_aberta=False) }}
+    {% else %}
+      <div class="vazio glass">
+        <p><strong>Ainda não há pesquisas nacionais publicadas.</strong> Só aparecem pesquisas registradas no TSE que passaram em todas as <a href="/metodologia">validações automáticas</a>.</p>
+        {% if cands_br %}<p>Candidatos no 2º turno, na ordem da urna: {% for c in cands_br %}{{ c.nome_urna|nome_proprio }} ({{ c.partido }}){% if not loop.last %} e {% endif %}{% endfor %}.</p>{% endif %}
+      </div>
+    {% endif %}
+  </section>
+  <section class="secao" aria-labelledby="h-pres-uf">
+    <h2 id="h-pres-uf">Pesquisas para presidente por estado</h2>
+    <p class="secao-sub">Somente pesquisas com abrangência estadual. Estados sem pesquisa ficam em cinza — nunca são preenchidos com dados nacionais.</p>
+    {{ ui.tabela_estados(mapa.presidente, 'presidente', ufs2t) }}
+  </section>
+</div>
+
+<div class="painel" data-painel="governador" hidden>
+  <section class="secao" aria-labelledby="h-gov">
+    <h2 id="h-gov">Governador: estados com 2º turno</h2>
+    {% if ufs2t %}
+    <ul class="chips-uf">
+      {% for uf in ufs2t %}<li><a class="chip-uf glass" href="/governador/{{ uf|lower }}">{{ uf|nome_uf }} <span class="num">{{ uf }}</span></a></li>{% endfor %}
+    </ul>
+    {% else %}
+    <p class="vazio glass">A lista de estados com 2º turno para governador ainda não foi carregada do TSE.</p>
+    {% endif %}
+    {{ ui.tabela_estados(mapa.governador, 'governador', ufs2t) }}
+  </section>
+</div>
+
+<section class="secao" aria-labelledby="h-rec">
+  <h2 id="h-rec">Pesquisas nacionais mais recentes</h2>
+  {% if pesquisas_br %}
+  <div class="grade-cards">
+    {% for p in pesquisas_br %}{{ ui.card_pesquisa(p, nivel=3) }}{% endfor %}
+  </div>
+  {% else %}
+  <p class="vazio glass">Nenhuma pesquisa nacional publicada até agora.</p>
+  {% endif %}
+  <p class="ver-mais"><a class="btn btn-vidro" href="/pesquisas">Ver todas as pesquisas e fontes →</a></p>
+</section>
+{% endblock %}
+{% block scripts %}{% include "_mapa_scripts.html" %}{% endblock %}

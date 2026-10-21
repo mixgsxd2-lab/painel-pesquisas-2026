@@ -1,0 +1,278 @@
+{# ============================================================================
+   Macros do Painel das Pesquisas 2026
+   Regra de ouro: nenhum percentual aparece sem os dados obrigatórios da pesquisa
+   no mesmo card (visíveis ou a um toque, em <details>).
+   ============================================================================ #}
+
+{% macro barra(rotulo, valor, cor, partido=None, sub=False) -%}
+<div class="barra{% if sub %} barra-sub{% endif %}">
+  <div class="barra-topo">
+    <span class="barra-nome"><i class="ponto" style="--c:{{ cor }}"></i>{{ rotulo|nome_proprio }}{% if partido %} <small>{{ partido }}</small>{% endif %}</span>
+    <strong class="barra-valor num" data-count="{{ valor }}">{{ valor|pct }}</strong>
+  </div>
+  <div class="barra-trilho"><div class="barra-fill" style="--v:{{ valor }}%;--c:{{ cor }}"></div></div>
+</div>
+{%- endmacro %}
+
+{% macro extras_resultado(r) -%}
+<div class="extras">
+  {% if r.tipo == 'validos' %}
+    <span>Brancos/nulos <strong>excluídos</strong></span>
+    <span>Indecisos <strong>excluídos</strong></span>
+    <span class="extras-nota">Votos válidos desconsideram brancos, nulos e indecisos.</span>
+  {% else %}
+    <span>Brancos/nulos <strong class="num">{{ r.brancos_nulos|pct if r.brancos_nulos is not none else 'não informado' }}</strong></span>
+    <span>Indecisos <strong class="num">{{ r.indecisos|pct if r.indecisos is not none else 'não informado' }}</strong></span>
+  {% endif %}
+</div>
+{%- endmacro %}
+
+{% macro lista_nomes(itens, chave='nome') -%}
+{%- for i in itens %}{{ i[chave] }}{% if not loop.last %}; {% endif %}{% endfor -%}
+{%- endmacro %}
+
+{% macro ficha(p) -%}
+<dl class="ficha">
+  <div><dt>Instituto</dt><dd>{{ p.instituto }}</dd></div>
+  <div><dt>Registro no TSE</dt><dd class="num">{{ p.registro }}</dd></div>
+  <div><dt>Contratante</dt><dd>{% if p.contratantes %}{{ lista_nomes(p.contratantes) }}{% elif p.pesquisa_propria %}Pesquisa própria do instituto{% else %}Não informado no TSE{% endif %}</dd></div>
+  <div><dt>Quem pagou</dt><dd>{% if p.pagantes %}{{ lista_nomes(p.pagantes) }}{% elif p.pesquisa_propria %}O próprio instituto{% else %}Não informado no TSE{% endif %}{% if p.valor %} <small>(valor declarado: R$ {{ p.valor|num(2) }})</small>{% endif %}</dd></div>
+  <div><dt>Coleta dos dados</dt><dd>{{ p.periodo_inicio|data_br }} a {{ p.periodo_fim|data_br }}</dd></div>
+  <div><dt>Entrevistados</dt><dd class="num">{{ p.entrevistados|num }}</dd></div>
+  <div><dt>Margem de erro</dt><dd class="num">± {{ p.margem_erro|dec }} pontos</dd></div>
+  <div><dt>Nível de confiança</dt><dd class="num">{{ p.nivel_confianca|dec }}%</dd></div>
+  <div><dt>Abrangência</dt><dd>{{ p.abrangencia_nome }}</dd></div>
+  <div><dt>Divulgação</dt><dd>{{ p.data_divulgacao|data_br }}</dd></div>
+</dl>
+{%- endmacro %}
+
+{% macro acoes(p) -%}
+<div class="card-acoes">
+  <a class="btn btn-vidro" href="{{ PESQELE_URL }}" target="_blank" rel="noopener" data-copiar="{{ p.registro }}"
+     title="Abre a consulta oficial PesqEle do TSE; o número do registro é copiado para você colar na busca">
+    <svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16"><path d="M9 12l2 2 4-4M12 3l7 3v6c0 4.5-3 7.7-7 9-4-1.3-7-4.5-7-9V6l7-3z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Conferir no TSE
+  </a>
+  <a class="btn btn-texto" href="/contato?pesquisa={{ p.slug }}#corrigir">Reportar erro</a>
+</div>
+{%- endmacro %}
+
+{% macro fontes(r) -%}
+<p class="fontes"><span>Fontes dos números:</span>
+  {% for f in r.fontes %}<a href="{{ f.url }}" target="_blank" rel="nofollow noopener">{{ f.dominio }}</a>{% if not loop.last %} · {% endif %}{% endfor %}
+</p>
+{%- endmacro %}
+
+{# Card completo de uma pesquisa — todos os dados obrigatórios sempre visíveis #}
+{% macro card_pesquisa(p, nivel=3, compacto=False) -%}
+<article class="card glass card-pesquisa{% if compacto %} compacto{% endif %}" id="p-{{ p.slug }}-{{ p.cargo }}">
+  <header class="card-cab">
+    <span class="selo">{{ p.cargo_nome }} · {{ 'Nacional' if p.abrangencia == 'BR' else p.abrangencia }} · 2º turno</span>
+    <h{{ nivel }} class="card-tit"><a href="{{ p.url }}">{{ p.instituto }}</a> <span class="card-reg num">{{ p.registro }}</span></h{{ nivel }}>
+  </header>
+  {% for r in p.resultados %}
+  <section class="resultado{% if not loop.first %} resultado-sec{% endif %}" aria-label="{{ r.tipo_nome }}">
+    <p class="tipo-res"><span class="chip">{{ r.tipo_nome }}</span></p>
+    {% for i in r.itens %}{{ barra(i.rotulo, i.valor, i.cor, i.partido, sub=not loop.first and false) }}{% endfor %}
+    {{ extras_resultado(r) }}
+    {{ fontes(r) }}
+  </section>
+  {% endfor %}
+  {{ ficha(p) }}
+  {{ acoes(p) }}
+</article>
+{%- endmacro %}
+
+{# Linha compacta com os dados obrigatórios (usada em tabelas, dentro de <details>) #}
+{% macro mini_ficha(p) -%}
+<li class="mini-ficha">
+  <a href="{{ p.url }}"><strong>{{ p.instituto }}</strong> <span class="num">{{ p.registro }}</span></a>
+  <span>Contratante: {{ lista_nomes(p.contratantes) if p.contratantes else ('próprio instituto' if p.pesquisa_propria else 'não informado') }}</span>
+  <span>Pagou: {{ lista_nomes(p.pagantes) if p.pagantes else ('próprio instituto' if p.pesquisa_propria else 'não informado') }}</span>
+  <span>Coleta {{ p.periodo_inicio|data_curta }}–{{ p.periodo_fim|data_curta }}</span>
+  <span class="num">{{ p.entrevistados|num }} entrevistas</span>
+  <span class="num">±{{ p.margem_erro|dec }} p.p. · {{ p.nivel_confianca|dec }}% de confiança</span>
+  <span>{{ p.abrangencia_nome }}</span>
+  <span>Divulgada em {{ p.data_divulgacao|data_br }}</span>
+  {% for r in p.resultados %}<span class="mini-res">{{ r.tipo_nome }}: {% for i in r.itens %}{{ i.rotulo|nome_proprio }} {{ i.valor|pct }}{% if not loop.last %}, {% endif %}{% endfor %}{% if r.tipo == 'totais' %}; brancos/nulos {{ r.brancos_nulos|pct if r.brancos_nulos is not none else 'n/i' }}; indecisos {{ r.indecisos|pct if r.indecisos is not none else 'n/i' }}{% endif %} — fontes: {% for f in r.fontes %}<a href="{{ f.url }}" target="_blank" rel="nofollow noopener">{{ f.dominio }}</a>{% if not loop.last %}, {% endif %}{% endfor %}</span>{% endfor %}
+  <a class="link-tse" href="{{ PESQELE_URL }}" target="_blank" rel="noopener" data-copiar="{{ p.registro }}">Conferir no TSE</a>
+</li>
+{%- endmacro %}
+
+{# Média das pesquisas registradas + lista completa das pesquisas usadas #}
+{% macro card_media(m, titulo, nivel=2, lista_aberta=True) -%}
+<section class="card glass card-media" aria-label="Média das pesquisas registradas">
+  <header class="card-cab">
+    <span class="selo selo-media">Média das pesquisas registradas</span>
+    <h{{ nivel }} class="card-tit">{{ titulo }}</h{{ nivel }}>
+    <p class="card-sub">{{ m.tipo_nome }} · {{ m.n_pesquisas }} pesquisa{{ 's' if m.n_pesquisas != 1 }} (a mais recente de cada instituto)</p>
+  </header>
+  {% for i in m.itens %}{{ barra(i.rotulo, i.valor, i.cor, i.partido) }}{% endfor %}
+  <div class="extras">
+    {% if m.tipo == 'validos' %}
+      <span>Brancos/nulos e indecisos <strong>excluídos (votos válidos)</strong></span>
+    {% else %}
+      <span>Brancos/nulos <strong class="num">{{ m.brancos_nulos|pct if m.brancos_nulos is not none else 'não informado' }}</strong></span>
+      <span>Indecisos <strong class="num">{{ m.indecisos|pct if m.indecisos is not none else 'não informado' }}</strong></span>
+    {% endif %}
+  </div>
+  <p class="nota">Média simples da pesquisa mais recente de cada instituto. Não é previsão de resultado. <a href="/metodologia">Como calculamos</a></p>
+  <details class="usadas"{% if lista_aberta %} open{% endif %}>
+    <summary>Pesquisas usadas no cálculo ({{ m.n_pesquisas }})</summary>
+    <div class="usadas-lista">
+      {% for p in m.pesquisas %}{{ card_pesquisa(p, nivel=nivel+1, compacto=True) }}{% endfor %}
+    </div>
+  </details>
+</section>
+{%- endmacro %}
+
+{# Resultado oficial (modo Apuração) #}
+{% macro card_apuracao(a, titulo, nivel=2) -%}
+<section class="card glass card-apuracao" aria-label="Resultado oficial do TSE">
+  <header class="card-cab">
+    <span class="selo selo-apuracao"><i class="pulso"></i> Apuração</span>
+    <h{{ nivel }} class="card-tit">{{ titulo }}</h{{ nivel }}>
+    <p class="card-sub num">{{ a.pst|dec }}% das seções totalizadas · atualizado pelo TSE em {{ a.data }} às {{ a.hora }}</p>
+  </header>
+  {% for c in a.candidatos %}{{ barra(c.nome, c.pct or 0, c.cor, c.partido) }}{% endfor %}
+  <p class="fonte-tse">Resultados: TSE — percentuais de votos válidos divulgados em resultados.tse.jus.br{% if a.totalizacao_final %} · totalização concluída{% endif %}</p>
+  {{ selo_apuracao() }}
+</section>
+{%- endmacro %}
+
+{# ------------------------------------------------------------------ anúncios #}
+{% macro slot(espaco, extra='') -%}
+{% set a = anuncio(espaco) %}
+<aside class="anuncio anuncio-{{ espaco }} {{ extra }}" aria-label="Publicidade">
+  <span class="rotulo-pub">Publicidade</span>
+  {% if a %}
+    <a class="anuncio-link" href="{{ a.link }}" target="_blank" rel="sponsored noopener">
+      <img src="{{ static_v(a.imagem) }}" alt="{{ a.texto_alternativo or a.marca }}" width="{{ a.largura or 600 }}" height="{{ a.altura or 200 }}" loading="lazy" decoding="async">
+    </a>
+  {% else %}
+    <a class="anuncie-aqui" href="/anuncie">
+      <strong>Anuncie aqui</strong>
+      <span>Espaço disponível para marcas. Anúncios políticos não são aceitos.</span>
+      <em aria-hidden="true">→</em>
+    </a>
+  {% endif %}
+</aside>
+{%- endmacro %}
+
+{% macro selo_apuracao() -%}
+{% set a = anuncio('selo_apuracao') %}
+<aside class="selo-patrocinio" aria-label="Publicidade">
+  <span class="rotulo-pub">Publicidade</span>
+  {% if a %}
+    <a href="{{ a.link }}" target="_blank" rel="sponsored noopener">Apuração apresentada por
+      <img src="{{ static_v(a.imagem) }}" alt="{{ a.marca }}" width="{{ a.largura or 240 }}" height="{{ a.altura or 80 }}" loading="lazy" decoding="async"></a>
+  {% else %}
+    <a href="/anuncie">Apuração apresentada por <strong>sua marca</strong> — anuncie aqui</a>
+  {% endif %}
+</aside>
+{%- endmacro %}
+
+{# ------------------------------------------------------------------ mapa #}
+{% macro mapa_bloco(mapa, cargo, uf_sel=None, alternador=True, modo_alternador='links') -%}
+{% set dados_cargo = mapa[cargo] %}
+{% set caminhos = mapa_svg() %}
+<section class="mapa-sec" aria-label="Mapa do Brasil por estado">
+  <div class="mapa-barra">
+    {% if alternador %}
+    <div class="pilula glass" role="tablist" aria-label="Escolha o cargo" data-modo="{{ modo_alternador }}">
+      <a role="tab" href="/presidente" data-cargo="presidente" aria-selected="{{ 'true' if cargo == 'presidente' else 'false' }}">Presidente</a>
+      <a role="tab" href="/governador" data-cargo="governador" aria-selected="{{ 'true' if cargo == 'governador' else 'false' }}">Governador</a>
+      <span class="pilula-ind" aria-hidden="true"></span>
+    </div>
+    {% endif %}
+    <div class="legenda" id="legenda">
+      {% if EM_APURACAO %}<span class="leg leg-tse">Resultados: TSE</span>{% endif %}
+      <span class="leg"><i style="--c:{{ mapa.paleta[0] }}"></i>1º na urna</span>
+      <span class="leg"><i style="--c:{{ mapa.paleta[1] }}"></i>2º na urna</span>
+      <span class="leg"><i class="sem-dados"></i>Sem pesquisas registradas</span>
+      <span class="leg leg-gov"{% if cargo != 'governador' %} hidden{% endif %}><i class="sem2t"></i>Sem 2º turno</span>
+    </div>
+  </div>
+  <div class="mapa-palco" id="mapa" data-cargo="{{ cargo }}" data-uf="{{ uf_sel or '' }}" data-apuracao="{{ 'sim' if EM_APURACAO else 'nao' }}">
+    {% if caminhos %}
+    <svg class="mapa-2d" id="mapa2d" viewBox="0 0 1000 1000" role="img" aria-label="Mapa do Brasil: {{ 'presidente' if cargo == 'presidente' else 'governador' }} por estado">
+      <defs>
+        <filter id="brilho2d" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="6"/></filter>
+      </defs>
+      {% for e in dados_cargo.estados %}
+      <a href="{{ e.url }}" class="uf uf-{{ e.status }}{% if uf_sel == e.uf %} ativo{% endif %}" data-uf="{{ e.uf }}"
+         aria-label="{{ e.nome }}: {% if e.status == 'sem_pesquisas' %}sem pesquisas registradas{% elif e.status == 'sem_2_turno' %}sem 2º turno{% else %}ver pesquisas{% endif %}">
+        <path d="{{ caminhos[e.uf] }}" style="--c:{{ e.cor }};--i:{{ e.intensidade }}"/>
+      </a>
+      {% endfor %}
+    </svg>
+    {% else %}
+    <p class="mapa-indisp">Mapa indisponível no momento — veja a tabela abaixo.</p>
+    {% endif %}
+    <div class="mapa-3d-host" id="mapa3d" aria-hidden="true"></div>
+    <p class="mapa-dica" id="mapa-dica">Toque em um estado para ver a média e as pesquisas</p>
+  </div>
+  <div class="gaveta glass" id="gaveta" role="dialog" aria-modal="false" aria-labelledby="gaveta-tit" hidden>
+    <button class="gaveta-alca" id="gaveta-fechar" type="button" aria-label="Fechar"><span></span></button>
+    <div class="gaveta-corpo" id="gaveta-corpo" tabindex="-1"></div>
+  </div>
+  <script type="application/json" id="dados-mapa">{{ mapa|tojson }}</script>
+</section>
+{%- endmacro %}
+
+{# Tabela HTML com os dados de cada estado (SEO + acessibilidade; o mapa nunca é o único lugar) #}
+{% macro tabela_estados(mapa_cargo, cargo, ufs2t) -%}
+<div class="tabela-wrap glass">
+<table class="tabela-estados">
+  <caption>{{ 'Presidente' if cargo == 'presidente' else 'Governador' }} — média das pesquisas registradas por estado (2º turno)</caption>
+  <thead><tr><th scope="col">Estado</th><th scope="col">Situação</th><th scope="col">Média das pesquisas registradas</th><th scope="col">Pesquisas usadas</th></tr></thead>
+  <tbody>
+  {% for e in mapa_cargo.estados %}
+    {% set m = media_de(cargo, e.uf) if e.status not in ('sem_2_turno',) else none %}
+    <tr class="linha-{{ e.status }}">
+      <th scope="row"><a href="{{ e.url }}">{{ e.nome }} <span class="num">({{ e.uf }})</span></a></th>
+      <td>{% if e.status == 'sem_2_turno' %}Sem 2º turno{% elif e.status == 'apuracao' %}Apuração (TSE){% elif m %}{{ m.n_pesquisas }} pesquisa{{ 's' if m.n_pesquisas != 1 }}{% else %}Sem pesquisas registradas{% endif %}</td>
+      <td>{% if m %}{% for i in m.itens %}<span class="tab-cand"><i class="ponto" style="--c:{{ i.cor }}"></i>{{ i.rotulo|nome_proprio }} <strong class="num">{{ i.valor|pct }}</strong></span>{% endfor %}<small>{{ m.tipo_nome }}</small>{% else %}—{% endif %}</td>
+      <td>{% if m %}<details><summary>Ver dados das {{ m.n_pesquisas }} pesquisa{{ 's' if m.n_pesquisas != 1 }}</summary><ul class="mini-lista">{% for p in m.pesquisas %}{{ mini_ficha(p) }}{% endfor %}</ul></details>{% else %}—{% endif %}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{%- endmacro %}
+
+{% macro faq_bloco(faq, pular_primeira=False) -%}
+<section class="faq" aria-labelledby="faq-tit">
+  <h2 id="faq-tit">Perguntas frequentes</h2>
+  {% for q, a in faq %}{% if not (pular_primeira and loop.first) %}
+  <details class="faq-item glass"{% if loop.index <= 1 %} open{% endif %}>
+    <summary><h3>{{ q }}</h3></summary>
+    <p>{{ a }}</p>
+  </details>
+  {% endif %}{% endfor %}
+</section>
+{%- endmacro %}
+
+{% macro atualizado(valor) -%}
+<p class="atualizado"><i class="pulso"></i> Atualizado em <time datetime="{{ valor or '' }}">{{ valor|datahora_br if valor else '—' }}</time></p>
+{%- endmacro %}
+
+{% macro migalhas(itens) -%}
+<nav class="migalhas" aria-label="Você está em">
+  <ol>{% for nome, url in itens %}<li>{% if loop.last %}<span aria-current="page">{{ nome }}</span>{% else %}<a href="{{ url }}">{{ nome }}</a>{% endif %}</li>{% endfor %}</ol>
+</nav>
+{%- endmacro %}
+
+{% macro contagem_regressiva(classe='') -%}
+{% set c = contagem() %}
+<div class="contagem {{ classe }}" data-alvo="{{ INICIO_APURACAO_ISO }}" role="timer" aria-label="Tempo até o fechamento das urnas e início da apuração (25/10, 17h de Brasília)">
+  {% if c.fim %}
+    <span class="contagem-fim"><i class="pulso"></i> Apuração em andamento</span>
+  {% else %}
+  <div class="cel"><span class="dig num" data-u="d">{{ '%02d'|format(c.d) }}</span><small>dias</small></div>
+  <div class="cel"><span class="dig num" data-u="h">{{ '%02d'|format(c.h) }}</span><small>horas</small></div>
+  <div class="cel"><span class="dig num" data-u="m">{{ '%02d'|format(c.m) }}</span><small>min</small></div>
+  <div class="cel"><span class="dig num" data-u="s">{{ '%02d'|format(c.s) }}</span><small>seg</small></div>
+  {% endif %}
+</div>
+{%- endmacro %}

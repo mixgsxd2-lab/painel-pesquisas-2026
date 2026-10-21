@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>{{ seo.titulo }}</title>
+<meta name="description" content="{{ seo.descricao }}">
+<meta name="robots" content="{{ seo.robots }}">
+<link rel="canonical" href="{{ seo.canonical }}">
+<meta name="theme-color" content="#07080D">
+<meta name="color-scheme" content="dark">
+{% if seo.modificado_iso %}<meta property="article:modified_time" content="{{ seo.modificado_iso }}">
+<meta property="og:updated_time" content="{{ seo.modificado_iso }}">{% endif %}
+<meta property="og:type" content="{{ seo.og_tipo }}">
+<meta property="og:site_name" content="{{ SITE_NOME }}">
+<meta property="og:locale" content="pt_BR">
+<meta property="og:title" content="{{ seo.titulo }}">
+<meta property="og:description" content="{{ seo.descricao }}">
+<meta property="og:url" content="{{ seo.canonical }}">
+<meta property="og:image" content="{{ seo.og_imagem }}">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Mapa do Brasil e título: {{ seo.titulo }}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ seo.titulo }}">
+<meta name="twitter:description" content="{{ seo.descricao }}">
+<meta name="twitter:image" content="{{ seo.og_imagem }}">
+<meta name="twitter:image:alt" content="Mapa do Brasil e título: {{ seo.titulo }}">
+{% if GOOGLE_VERIF %}<meta name="google-site-verification" content="{{ GOOGLE_VERIF }}">{% endif %}
+{% if BING_VERIF %}<meta name="msvalidate.01" content="{{ BING_VERIF }}">{% endif %}
+<link rel="icon" href="{{ static_v('img/favicon.svg') }}" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/og/geral.png">
+<link rel="sitemap" type="application/xml" href="/sitemap.xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"></noscript>
+<style>{{ css_critico()|safe }}</style>
+<link rel="preload" href="{{ static_v('css/site.css') }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="{{ static_v('css/site.css') }}"></noscript>
+{% for ld in seo.jsonld %}<script type="application/ld+json">{{ ld|tojson }}</script>
+{% endfor %}
+{% block head %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}{% if EM_APURACAO %} modo-apuracao{% endif %}">
+<a class="pular" href="#conteudo">Pular para o conteúdo</a>
+<div class="fundo" aria-hidden="true"><div class="mesh"><i></i><i></i><i></i></div><div class="grao"></div></div>
+{% if DEMO %}<div class="faixa-demo" role="alert"><strong>DEMONSTRAÇÃO</strong> — todos os nomes, institutos e números desta versão são FICTÍCIOS e servem apenas para visualizar o design.</div>{% endif %}
+
+<header class="topo">
+  <div class="topo-in glass">
+    <a class="marca" href="/" aria-label="{{ SITE_NOME }} — página inicial">
+      <svg class="marca-ico" viewBox="0 0 32 32" width="28" height="28" aria-hidden="true"><defs><linearGradient id="lg-marca" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#C4B5FD"/><stop offset="1" stop-color="#7C6CF2"/></linearGradient></defs><rect x="2" y="2" width="28" height="28" rx="8" fill="url(#lg-marca)"/><path d="M9 21V14M14 21V10M19 21v-5M24 21V12" stroke="#0B0C14" stroke-width="2.6" stroke-linecap="round"/></svg>
+      <span class="marca-txt">Painel das Pesquisas <b>2026</b></span>
+    </a>
+    {% set atual = request.path %}
+    <nav class="menu" aria-label="Principal">
+      <a href="/" {% if atual == '/' or atual.startswith('/presidente') or atual.startswith('/governador') %}aria-current="page"{% endif %}>Mapa</a>
+      <a href="/pesquisas" {% if atual.startswith('/pesquisas') %}aria-current="page"{% endif %}>Pesquisas</a>
+      <a href="/metodologia" {% if atual == '/metodologia' %}aria-current="page"{% endif %}>Metodologia</a>
+      <a href="/anuncie" {% if atual == '/anuncie' %}aria-current="page"{% endif %}>Anuncie</a>
+    </nav>
+    {% if EM_APURACAO %}<span class="badge-apuracao"><i class="pulso"></i>Apuração</span>{% endif %}
+  </div>
+</header>
+
+<main id="conteudo">
+{% block conteudo %}{% endblock %}
+</main>
+
+<footer class="rodape">
+  <div class="rodape-in">
+    <div class="rodape-col">
+      <p class="rodape-marca">{{ SITE_NOME }}</p>
+      <p>Agregador independente de pesquisas eleitorais registradas no Tribunal Superior Eleitoral para o 2º turno de 25/10/2026.</p>
+      {% set at = atualizado_global() %}
+      <p class="atualizado"><i class="pulso"></i> Atualizado em <time datetime="{{ at or '' }}">{{ at|datahora_br if at else '—' }}</time></p>
+    </div>
+    <nav class="rodape-col" aria-label="Rodapé">
+      <a href="/presidente">Presidente</a>
+      <a href="/governador">Governador</a>
+      <a href="/pesquisas">Pesquisas e fontes</a>
+      <a href="/metodologia">Metodologia</a>
+      <a href="/contato">Contato e correções</a>
+      <a href="/anuncie">Anuncie</a>
+    </nav>
+    <div class="rodape-col">
+      <p>Dados: <a href="https://dadosabertos.tse.jus.br/dataset/pesquisas-eleitorais-2026" rel="noopener" target="_blank">Portal de Dados Abertos do TSE</a>, <a href="https://resultados.tse.jus.br" rel="noopener" target="_blank">Resultados TSE</a> e malhas do <a href="https://servicodados.ibge.gov.br/api/docs/malhas?versao=3" rel="noopener" target="_blank">IBGE</a>.</p>
+      <p>Correções: <a href="mailto:{{ EMAIL_CONTATO }}">{{ EMAIL_CONTATO }}</a></p>
+    </div>
+  </div>
+</footer>
+
+<div class="aviso-fixo" role="note">
+  <p>Este site apenas reproduz pesquisas registradas na Justiça Eleitoral. Não realiza pesquisas próprias. Médias são cálculos simples sobre pesquisas registradas e não são previsão de resultado.</p>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
+<script src="{{ static_v('js/app.js') }}" defer></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

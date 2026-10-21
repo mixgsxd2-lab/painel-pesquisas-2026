@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block conteudo %}
+<section class="glass bloco-texto admin-login">
+  <h1>Área restrita</h1>
+  {% if erro %}<p class="msg-erro" role="alert">{{ erro }}</p>{% endif %}
+  <form method="post" class="form">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <label>Senha<input type="password" name="senha" required autocomplete="current-password"></label>
+    <button class="btn btn-primario" type="submit">Entrar</button>
+  </form>
+</section>
+{% endblock %}

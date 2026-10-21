@@ -1,0 +1,12 @@
+{
+  "_leia_me": "Opcional. Ajuda o robô a priorizar o SITE OFICIAL de cada instituto na busca. 'contem' = palavras que aparecem no nome do instituto no TSE (sem acento, maiúsculas). Institutos fora desta lista também são buscados normalmente; um domínio que contenha o nome fantasia do instituto também é tratado como oficial.",
+  "institutos": [
+    {"contem": ["QUAEST"], "dominios": ["quaest.com.br"]},
+    {"contem": ["ATLASINTEL", "ATLAS INTEL"], "dominios": ["atlasintel.org", "atlasintel.com"]},
+    {"contem": ["DATAFOLHA"], "dominios": ["datafolha.folha.uol.com.br"]},
+    {"contem": ["PARANA DE PESQUISAS", "PARANA PESQUISAS"], "dominios": ["paranapesquisas.com.br"]},
+    {"contem": ["REAL TIME"], "dominios": ["realtimebigdata.com.br"]},
+    {"contem": ["IPEC"], "dominios": ["ipec-inteligencia.com.br"]},
+    {"contem": ["PODERDATA", "PODER360"], "dominios": ["poder360.com.br"]}
+  ]
+}

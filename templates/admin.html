@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block body_class %}pagina-admin{% endblock %}
+{% block conteudo %}
+<section class="hero hero-compacto">
+  <div class="hero-txt">
+    <h1>Painel administrativo</h1>
+    <p class="lead">Somente leitura. O histórico de números publicados não pode ser alterado nem apagado.</p>
+    <form method="post" action="/admin/sair"><input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button class="btn btn-texto" type="submit">Sair</button></form>
+  </div>
+</section>
+
+<div class="numeros">
+  <div class="numero glass"><span class="num grande">{{ contagens.get('PUBLICADA', 0) }}</span><small>publicadas</small></div>
+  <div class="numero glass"><span class="num grande">{{ contagens.get('DESCARTADA', 0) }}</span><small>descartadas (nova tentativa)</small></div>
+  <div class="numero glass"><span class="num grande">{{ contagens.get('PENDENTE', 0) + contagens.get('AGUARDANDO_DIVULGACAO', 0) }}</span><small>pendentes</small></div>
+  <div class="numero glass"><span class="num grande">{{ aud.hoje }}</span><small>visitas hoje</small></div>
+</div>
+
+<section class="secao glass bloco-texto">
+  <h2>Última rodada do pipeline</h2>
+  <pre class="pre">{{ ultima|tojson(indent=2) }}</pre>
+  <p><a class="btn btn-vidro" href="/admin/historico.csv">Baixar histórico completo (CSV, {{ historico_n }} registros)</a></p>
+</section>
+
+<section class="secao glass bloco-texto">
+  <h2>Anúncios (config/anuncios.json)</h2>
+  <table class="tabela-admin"><thead><tr><th>Espaço</th><th>Marca</th><th>Período</th><th>Situação</th></tr></thead><tbody>
+  {% for a in ads %}<tr><td>{{ a.espaco }}</td><td>{{ a.marca }}</td><td>{{ a.inicio }} → {{ a.fim }}</td><td>{{ a.recusa or 'OK — no ar no período' }}</td></tr>{% endfor %}
+  </tbody></table>
+</section>
+
+<section class="secao glass bloco-texto">
+  <h2>Contatos de anunciantes</h2>
+  <table class="tabela-admin"><thead><tr><th>Data</th><th>Nome</th><th>Empresa</th><th>E-mail</th><th>Mensagem</th></tr></thead><tbody>
+  {% for c in contatos %}<tr><td>{{ c.criado_em|datahora_br }}</td><td>{{ c.nome }}</td><td>{{ c.empresa }}</td><td><a href="mailto:{{ c.email }}">{{ c.email }}</a></td><td>{{ c.mensagem }}</td></tr>
+  {% else %}<tr><td colspan="5">Nenhum contato ainda.</td></tr>{% endfor %}
+  </tbody></table>
+</section>
+
+<section class="secao glass bloco-texto">
+  <h2>Pedidos de correção</h2>
+  <table class="tabela-admin"><thead><tr><th>Data</th><th>Pesquisa</th><th>Nome</th><th>E-mail</th><th>Mensagem</th></tr></thead><tbody>
+  {% for c in correcoes %}<tr><td>{{ c.criado_em|datahora_br }}</td><td>{{ c.protocolo or '—' }}</td><td>{{ c.nome }}</td><td><a href="mailto:{{ c.email }}">{{ c.email }}</a></td><td>{{ c.mensagem }}</td></tr>
+  {% else %}<tr><td colspan="5">Nenhum pedido ainda.</td></tr>{% endfor %}
+  </tbody></table>
+</section>
+
+<section class="secao glass bloco-texto">
+  <h2>Pesquisas não publicadas</h2>
+  <table class="tabela-admin"><thead><tr><th>Registro</th><th>Cargo</th><th>Instituto</th><th>Divulgação</th><th>Status</th><th>Tentativas</th><th>Motivo</th></tr></thead><tbody>
+  {% for p in pendentes %}<tr><td class="num">{{ p.registro }}</td><td>{{ p.cargo }}</td><td>{{ p.instituto }}</td><td>{{ p.data_divulgacao|data_br }}</td><td>{{ p.status }}</td><td>{{ p.tentativas }}</td><td>{{ p.motivo or '' }}</td></tr>{% endfor %}
+  </tbody></table>
+</section>
+
+<section class="secao glass bloco-texto">
+  <h2>Log de validação (últimos 300)</h2>
+  <table class="tabela-admin"><thead><tr><th>Quando</th><th>Registro</th><th>Cargo</th><th>Status</th><th>Motivo</th></tr></thead><tbody>
+  {% for l in logs %}<tr><td>{{ l.em|datahora_br }}</td><td class="num">{{ l.protocolo }}</td><td>{{ l.cargo }}</td><td>{{ l.status }}</td><td>{{ l.motivo }}</td></tr>{% endfor %}
+  </tbody></table>
+</section>
+{% endblock %}

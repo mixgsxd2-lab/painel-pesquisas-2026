@@ -1,0 +1,11 @@
+Flask>=3.1,<4
+APScheduler>=3.10,<4
+requests>=2.32,<3
+beautifulsoup4>=4.12,<5
+pypdf>=5.0,<7
+Pillow>=10.4,<12
+Flask-Compress>=1.15,<2
+Brotli>=1.1,<2
+python-dotenv>=1.0,<2
+tzdata>=2024.1
+gunicorn>=22,<24; sys_platform != "win32"

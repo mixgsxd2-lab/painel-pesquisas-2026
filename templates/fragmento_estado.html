@@ -1,0 +1,19 @@
+{% import "macros.html" as ui with context %}
+<header class="gaveta-cab">
+  <p class="selo">{{ cargo_nome|capitalize }} · 2º turno</p>
+  <h2 id="gaveta-tit">{{ uf|nome_uf }} <span class="num">({{ uf }})</span></h2>
+  <a class="btn btn-texto" href="/{{ cargo }}/{{ uf|lower }}">Abrir página completa →</a>
+</header>
+{% if sem_2_turno %}
+  <div class="vazio glass"><p><strong>Sem 2º turno</strong> para governador {{ uf|no_uf }}, segundo os dados oficiais do TSE.</p>
+  <p><a href="/presidente/{{ uf|lower }}">Ver pesquisas para presidente {{ uf|no_uf }} →</a></p></div>
+{% else %}
+  {% if apur %}{{ ui.card_apuracao(apur, 'Resultado oficial — ' ~ (uf|nome_uf), nivel=3) }}{% endif %}
+  {% if media %}
+    {{ ui.card_media(media, (cargo_nome|capitalize) ~ ' — ' ~ (uf|nome_uf), nivel=3, lista_aberta=True) }}
+  {% else %}
+    <div class="vazio glass"><p><strong>Sem pesquisas registradas</strong> publicadas para {{ cargo_nome }} {{ uf|no_uf }}.</p>
+    <p class="nota">Dados nacionais nunca são usados no lugar de dados estaduais.</p></div>
+  {% endif %}
+{% endif %}
+{{ ui.slot('gaveta_mapa') }}
