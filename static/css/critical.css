@@ -25,7 +25,7 @@ main{max-width:1200px;margin:0 auto;padding:0 clamp(16px,3vw,28px)}
 .sobretitulo{color:var(--acento);font-weight:600;font-size:.85rem;margin:0 0 10px}
 .lead{color:var(--txt2);font-size:1.02rem;max-width:62ch;margin:0 0 12px}
 .atualizado{display:inline-flex;align-items:center;gap:8px;color:var(--txt3);font-size:.82rem;margin:0}
-.pulso{display:inline-block;width:7px;height:7px;border-radius:50%;background:#34D399}
+.pulso{display:inline-block;width:7px;height:7px;border-radius:50%;background:#34D399;flex:none}
 .contagem{display:flex;gap:4px;padding:10px 12px}
 .contagem .cel{display:flex;flex-direction:column;align-items:center;min-width:52px}
 .contagem .dig{font-size:1.5rem;font-weight:700;letter-spacing:-.02em;line-height:1.1}
@@ -43,4 +43,5 @@ main{max-width:1200px;margin:0 auto;padding:0 clamp(16px,3vw,28px)}
 .faixa-demo{background:#F59E0B;color:#111;text-align:center;padding:8px 12px;font-size:.9rem}
 [hidden]{display:none!important}
 @media (max-width:900px){.mapa-grade{grid-template-columns:1fr}.mapa-palco{max-height:none}}
-@media (max-width:620px){.topo-in{flex-wrap:wrap;gap:6px;padding:10px 16px}.menu{margin-left:0;width:100%;justify-content:space-between}.menu a{padding:6px 8px;font-size:.86rem}.hero{padding-top:22px}.contagem .cel{min-width:44px}.contagem .dig{font-size:1.25rem}:root{--aviso-h:64px}.aviso-fixo p{font-size:.68rem}}
+@media (max-width:620px){.topo-in{flex-wrap:wrap;gap:6px;padding:10px 16px}.menu{margin-left:0;width:100%;justify-content:space-between;gap:2px}.menu a{flex:1 1 auto;text-align:center;padding:6px 4px;font-size:.84rem;white-space:nowrap}.hero{padding-top:22px}.contagem .cel{min-width:44px}.contagem .dig{font-size:1.25rem}:root{--aviso-h:72px}.aviso-fixo{padding:5px 12px calc(5px + env(safe-area-inset-bottom))}.aviso-fixo p{font-size:.66rem;line-height:1.35}.aviso-atualizando{justify-content:flex-start;align-items:flex-start;text-align:left}.aviso-atualizando .pulso{margin-top:.55em}}
+@media (max-width:360px){.menu a{font-size:.78rem;padding:6px 2px}.marca-txt{font-size:.95rem}}

@@ -11,6 +11,14 @@
     return Number(v).toLocaleString("pt-BR", { minimumFractionDigits: casas, maximumFractionDigits: casas });
   }
 
+  // Altura real do aviso fixo do rodapé, para nada ficar escondido atrás dele.
+  var aviso = $(".aviso-fixo");
+  function medirAviso() {
+    if (aviso) document.documentElement.style.setProperty("--aviso-h", aviso.offsetHeight + "px");
+  }
+  medirAviso();
+  window.addEventListener("resize", medirAviso);
+
   /* ---------------- barras animadas ao aparecer ---------------- */
   function prepararBarras(raiz) {
     if (reduzido || !("IntersectionObserver" in window)) return;

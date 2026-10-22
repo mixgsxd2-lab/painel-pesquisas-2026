@@ -4,10 +4,14 @@
    no mesmo card (visíveis ou a um toque, em <details>).
    ============================================================================ #}
 
-{% macro barra(rotulo, valor, cor, partido=None, sub=False) -%}
+{% macro avatar(foto, rotulo, cor) -%}
+{% if foto %}<img class="foto" src="{{ foto }}" alt="Foto de {{ rotulo|nome_proprio }}" width="32" height="32" loading="lazy" decoding="async" style="--c:{{ cor }}">{% else %}<i class="ponto" style="--c:{{ cor }}"></i>{% endif %}
+{%- endmacro %}
+
+{% macro barra(rotulo, valor, cor, partido=None, sub=False, foto=None) -%}
 <div class="barra{% if sub %} barra-sub{% endif %}">
   <div class="barra-topo">
-    <span class="barra-nome"><i class="ponto" style="--c:{{ cor }}"></i>{{ rotulo|nome_proprio }}{% if partido %} <small>{{ partido }}</small>{% endif %}</span>
+    <span class="barra-nome">{{ avatar(foto, rotulo, cor) }}<span class="barra-rot">{{ rotulo|nome_proprio }}{% if partido %} <small>{{ partido }}</small>{% endif %}</span></span>
     <strong class="barra-valor num" data-count="{{ valor }}">{{ valor|pct }}</strong>
   </div>
   <div class="barra-trilho"><div class="barra-fill" style="--v:{{ valor }}%;--c:{{ cor }}"></div></div>
@@ -72,7 +76,7 @@
     <p class="card-sub">{{ 'Nacional' if p.abrangencia == 'BR' else (p.abrangencia|nome_uf) }} · {{ p.data_divulgacao|data_curta }}{% if r0 %} · {{ r0.tipo_nome|lower }}{% endif %}</p>
   </header>
   {% if r0 %}
-  {% for i in r0.itens %}{{ barra(i.rotulo, i.valor, i.cor, i.partido) }}{% endfor %}
+  {% for i in r0.itens %}{{ barra(i.rotulo, i.valor, i.cor, i.partido, foto=i.foto) }}{% endfor %}
   {% if r0.tipo == 'totais' %}<p class="extras-linha">Brancos/nulos {{ r0.brancos_nulos|pct if r0.brancos_nulos is not none else 'n/i' }} · Indecisos {{ r0.indecisos|pct if r0.indecisos is not none else 'n/i' }}</p>{% endif %}
   {% endif %}
   <details class="mais">
@@ -80,7 +84,7 @@
     {% for r in p.resultados[1:] %}
     <section class="resultado resultado-sec" aria-label="{{ r.tipo_nome }}">
       <p class="tipo-res"><span class="chip">{{ r.tipo_nome }}</span></p>
-      {% for i in r.itens %}{{ barra(i.rotulo, i.valor, i.cor, i.partido) }}{% endfor %}
+      {% for i in r.itens %}{{ barra(i.rotulo, i.valor, i.cor, i.partido, foto=i.foto) }}{% endfor %}
       {{ extras_resultado(r) }}
     </section>
     {% endfor %}
@@ -115,7 +119,7 @@
     <h{{ nivel }} class="card-tit">{{ titulo }}</h{{ nivel }}>
     <p class="card-sub">{{ m.tipo_nome }} · {{ m.n_pesquisas }} pesquisa{{ 's' if m.n_pesquisas != 1 }}</p>
   </header>
-  {% for i in m.itens %}{{ barra(i.rotulo, i.valor, i.cor, i.partido) }}{% endfor %}
+  {% for i in m.itens %}{{ barra(i.rotulo, i.valor, i.cor, i.partido, foto=i.foto) }}{% endfor %}
   <p class="nota">Não é previsão de resultado. <a href="/metodologia">Como calculamos</a></p>
   <details class="mais usadas"{% if lista_aberta %} open{% endif %}>
     <summary>Ver as {{ m.n_pesquisas }} pesquisa{{ 's' if m.n_pesquisas != 1 }} usada{{ 's' if m.n_pesquisas != 1 }}</summary>
@@ -134,7 +138,7 @@
     <h{{ nivel }} class="card-tit">{{ titulo }}</h{{ nivel }}>
     <p class="card-sub num">{{ a.pst|dec }}% das seções totalizadas · atualizado pelo TSE em {{ a.data }} às {{ a.hora }}</p>
   </header>
-  {% for c in a.candidatos %}{{ barra(c.nome, c.pct or 0, c.cor, c.partido) }}{% endfor %}
+  {% for c in a.candidatos %}{{ barra(c.nome, c.pct or 0, c.cor, c.partido, foto=c.foto) }}{% endfor %}
   <p class="fonte-tse">Resultados: TSE — percentuais de votos válidos divulgados em resultados.tse.jus.br{% if a.totalizacao_final %} · totalização concluída{% endif %}</p>
   {{ selo_apuracao() }}
 </section>
@@ -227,7 +231,7 @@
       <button type="button" class="mapa-nacional" data-uf="BR" aria-label="Ver a média nacional para presidente e as pesquisas usadas">
         <span class="mn-tit">Média nacional · presidente</span>
         {% for i in mapa.nacional.itens|sort(attribute='valor', reverse=True) %}
-        <span class="mn-linha"><i class="ponto" style="--c:{{ i.cor }}"></i>{{ i.rotulo|nome_proprio }} <strong class="num">{{ i.valor|pct }}</strong></span>
+        <span class="mn-linha">{{ avatar(i.foto, i.rotulo, i.cor) }}{{ i.rotulo|nome_proprio }} <strong class="num">{{ i.valor|pct }}</strong></span>
         {% endfor %}
         <span class="mn-sub">{{ mapa.nacional.tipo_nome }} · {{ mapa.nacional.n }} pesquisa{{ 's' if mapa.nacional.n != 1 }} · toque para ver os dados</span>
       </button>
@@ -262,9 +266,9 @@
     {% set m = media_de(cargo, e.uf) if e.status not in ('sem_2_turno',) else none %}
     <tr class="linha-{{ e.status }}">
       <th scope="row"><a href="{{ e.url }}">{{ e.nome }} <span class="num">({{ e.uf }})</span></a></th>
-      <td>{% if e.status == 'sem_2_turno' %}Sem 2º turno{% elif e.status == 'apuracao' %}Apuração (TSE){% elif m %}{{ m.n_pesquisas }} pesquisa{{ 's' if m.n_pesquisas != 1 }}{% else %}Sem pesquisas registradas{% endif %}</td>
-      <td>{% if m %}{% for i in m.itens %}<span class="tab-cand"><i class="ponto" style="--c:{{ i.cor }}"></i>{{ i.rotulo|nome_proprio }} <strong class="num">{{ i.valor|pct }}</strong></span>{% endfor %}<small>{{ m.tipo_nome }}</small>{% else %}—{% endif %}</td>
-      <td>{% if m %}<details><summary>Ver dados das {{ m.n_pesquisas }} pesquisa{{ 's' if m.n_pesquisas != 1 }}</summary><ul class="mini-lista">{% for p in m.pesquisas %}{{ mini_ficha(p) }}{% endfor %}</ul></details>{% else %}—{% endif %}</td>
+      <td data-label="Situação">{% if e.status == 'sem_2_turno' %}Sem 2º turno{% elif e.status == 'apuracao' %}Apuração (TSE){% elif m %}{{ m.n_pesquisas }} pesquisa{{ 's' if m.n_pesquisas != 1 }}{% else %}Sem pesquisas registradas{% endif %}</td>
+      <td data-label="Média">{% if m %}{% for i in m.itens %}<span class="tab-cand">{{ avatar(i.foto, i.rotulo, i.cor) }}{{ i.rotulo|nome_proprio }} <strong class="num">{{ i.valor|pct }}</strong></span>{% endfor %}<small>{{ m.tipo_nome }}</small>{% else %}—{% endif %}</td>
+      <td data-label="Pesquisas">{% if m %}<details><summary>Ver dados das {{ m.n_pesquisas }} pesquisa{{ 's' if m.n_pesquisas != 1 }}</summary><ul class="mini-lista">{% for p in m.pesquisas %}{{ mini_ficha(p) }}{% endfor %}</ul></details>{% else %}—{% endif %}</td>
     </tr>
   {% endfor %}
   </tbody>

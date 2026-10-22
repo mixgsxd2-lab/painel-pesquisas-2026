@@ -5,6 +5,7 @@ import json
 from functools import lru_cache
 
 import settings
+from core import fotos
 from core import db
 from core.textutil import normalizar
 
@@ -63,6 +64,7 @@ def listar(cargo: str, uf: str) -> list[dict]:
     for c in cands:
         c["cor"] = cor_por_ordem(c["ordem"])
         c["apelidos"] = apelidos(cargo, uf, c)
+        c["foto"] = fotos.url(cargo, uf, c["numero"])
     return cands
 
 

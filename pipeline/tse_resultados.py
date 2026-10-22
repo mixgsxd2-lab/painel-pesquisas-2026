@@ -68,6 +68,11 @@ def baixar(cod_eleicao: str, abrangencia: str, cargo_tse: int) -> dict | None:
         return None
 
 
+def url_foto(cod_eleicao: str, abrangencia: str, sqcand: str) -> str:
+    ab = abrangencia.lower()
+    return f"{settings.TSE_RESULTADOS_BASE}/ele{settings.ANO}/{cod_eleicao}/fotos/{ab}/{sqcand}.jpeg"
+
+
 def candidatos_do_arquivo(j: dict) -> list[dict]:
     """Lista plana de candidatos de um arquivo -u.json."""
     out = []
@@ -78,6 +83,7 @@ def candidatos_do_arquivo(j: dict) -> list[dict]:
                     out.append(
                         {
                             "numero": str(cd.get("n", "")),
+                            "sqcand": str(cd.get("sqcand") or ""),
                             "nome_urna": cd.get("nmu") or cd.get("nm") or "",
                             "nome_completo": cd.get("nm") or "",
                             "partido": par.get("sg") or "",

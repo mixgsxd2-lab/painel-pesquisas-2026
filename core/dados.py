@@ -67,6 +67,7 @@ def _enriquecer(p, resultados_rows) -> dict:
             itens.append({
                 "numero": num, "rotulo": c.get("nome_urna", num), "partido": c.get("partido", ""),
                 "valor": val, "cor": c.get("cor", cand_mod.cor_sem_dados()), "ordem": c.get("ordem", 9),
+                "foto": c.get("foto"),
             })
         itens.sort(key=lambda i: i["ordem"])
         res.append({
@@ -192,7 +193,7 @@ def media(cargo: str, uf: str) -> dict | None:
                 continue
             linhas.append({
                 "numero": c["numero"], "rotulo": c["nome_urna"], "partido": c["partido"],
-                "cor": c["cor"], "ordem": c["ordem"], "valor": round(mean(vals), 1),
+                "cor": c["cor"], "ordem": c["ordem"], "valor": round(mean(vals), 1), "foto": c.get("foto"),
             })
         if len(linhas) < 2:
             return None
@@ -229,6 +230,7 @@ def apuracao(cargo: str, uf: str) -> dict | None:
     cands = {c["numero"]: c for c in cand_mod.listar(cargo, "BR" if cargo == "presidente" else uf)}
     for c in d.get("candidatos", []):
         c["cor"] = cands.get(c["numero"], {}).get("cor", cand_mod.cor_por_ordem(c.get("seq") or 1))
+        c["foto"] = cands.get(c["numero"], {}).get("foto")
     d["atualizado_tse"] = r["atualizado_tse"]
     return d
 

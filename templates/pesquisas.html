@@ -68,13 +68,13 @@
     {% for r in registradas %}
       <tr>
         <th scope="row">{{ r.instituto }}</th>
-        <td>{{ r.cargo_nome }}</td>
-        <td>{{ r.local_curto }}</td>
-        <td class="num"><a href="{{ PESQELE_URL }}" target="_blank" rel="noopener" data-copiar="{{ r.registro }}" title="Conferir no TSE (copia o número)">{{ r.registro }}</a></td>
-        <td class="num">{{ r.periodo_inicio|data_curta }}–{{ r.periodo_fim|data_curta }}</td>
-        <td class="num">{{ r.entrevistados|num }}</td>
-        <td class="num">{{ r.data_divulgacao|data_curta }}</td>
-        <td><span class="sit{% if r.situacao == 'Divulgação prevista' %} sit-futura{% endif %}">{{ r.situacao }}</span></td>
+        <td data-label="Cargo">{{ r.cargo_nome }}</td>
+        <td data-label="Local">{{ r.local_curto }}</td>
+        <td data-label="Registro" class="num"><a href="{{ PESQELE_URL }}" target="_blank" rel="noopener" data-copiar="{{ r.registro }}" title="Conferir no TSE (copia o número)">{{ r.registro }}</a></td>
+        <td data-label="Coleta" class="num">{{ r.periodo_inicio|data_curta }}–{{ r.periodo_fim|data_curta }}</td>
+        <td data-label="Entrevistas" class="num">{{ r.entrevistados|num }}</td>
+        <td data-label="Divulgação" class="num">{{ r.data_divulgacao|data_curta }}</td>
+        <td data-label="Situação"><span class="sit{% if r.situacao == 'Divulgação prevista' %} sit-futura{% endif %}">{{ r.situacao }}</span></td>
       </tr>
     {% endfor %}
     </tbody>

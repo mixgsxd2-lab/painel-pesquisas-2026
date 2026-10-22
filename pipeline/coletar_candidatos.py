@@ -11,8 +11,9 @@ import logging
 import re
 
 import settings
-from core import db
+from core import db, fotos
 from core.ufs import UFS
+from pipeline import http
 from pipeline import tse_resultados as tr
 
 log = logging.getLogger("pipeline.candidatos")
@@ -51,6 +52,22 @@ def _salvar(cargo: str, uf: str, cands: list[dict]) -> None:
             )
 
 
+def _baixar_fotos(cargo: str, uf: str, cod_eleicao: str, cands: list[dict]) -> None:
+    """Baixa a foto oficial de cada candidato no TSE (só se ainda não existir)."""
+    fotos.PASTA.mkdir(parents=True, exist_ok=True)
+    ab = "br" if uf == "BR" else uf
+    for c in cands:
+        destino = fotos.PASTA / fotos.nome_arquivo(cargo, uf, c["numero"])
+        if destino.exists() or not c.get("sqcand"):
+            continue
+        try:
+            r = http.sessao().get(tr.url_foto(cod_eleicao, ab, c["sqcand"]), timeout=20)
+            if r.status_code == 200 and r.headers.get("content-type", "").startswith("image/"):
+                destino.write_bytes(r.content)
+        except Exception as e:  # noqa: BLE001 - foto é opcional
+            log.info("Foto de %s indisponível: %s", c["nome_urna"], e)
+
+
 def coletar() -> dict:
     cods = tr.codigos_eleicao()
     resumo = {"presidente": 0, "governador_ufs": []}
@@ -62,6 +79,7 @@ def coletar() -> dict:
         if len(cands) == 2:
             j2 = tr.baixar(cods["federal_2t"], "br", 1)
             _salvar("presidente", "BR", _ordenar(cands, j2))
+            _baixar_fotos("presidente", "BR", cods["federal_1t"], cands)
             resumo["presidente"] = 2
         else:
             log.warning("Presidente: esperados 2 candidatos no 2º turno, achados %d", len(cands))
@@ -77,6 +95,7 @@ def coletar() -> dict:
         if len(cands) == 2:
             j2 = tr.baixar(cods["estadual_2t"], uf, 3)
             _salvar("governador", uf, _ordenar(cands, j2))
+            _baixar_fotos("governador", uf, cods["estadual_1t"], cands)
             resumo["governador_ufs"].append(uf)
         else:
             # sem 2º turno (ou situação pendente): remove eventuais registros antigos

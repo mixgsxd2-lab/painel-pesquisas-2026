@@ -83,6 +83,11 @@
 .barra-nome small{color:var(--txt3);font-weight:500;font-size:.76rem}
 .barra-valor{font-size:1.2rem;font-weight:700;letter-spacing:-.02em}
 .ponto{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--c);flex:none}
+.foto{width:32px;height:32px;border-radius:50%;object-fit:cover;object-position:50% 15%;flex:none;background:var(--sup2);box-shadow:0 0 0 2px var(--c)}
+.barra-nome{min-width:0}
+.barra-rot{min-width:0;overflow-wrap:anywhere}
+.card-media .foto{width:42px;height:42px}
+.mn-linha .foto{width:24px;height:24px;box-shadow:0 0 0 1.5px var(--c)}
 .barra-trilho{height:6px;border-radius:999px;background:var(--sup2);overflow:hidden}
 .barra-fill{height:100%;width:var(--v);border-radius:inherit;background:var(--c);transform-origin:left;transition:transform .8s cubic-bezier(.2,.8,.2,1)}
 .js .barra-fill.esperando{transform:scaleX(0)}
@@ -312,3 +317,27 @@ details.mais .ficha{border-top:0;padding-top:4px}
 .sit-futura{color:#C4B5FD}
 .contador a{color:#C4B5FD}
 .tabela-reg td.num{white-space:nowrap}
+
+/* celular: quadro nacional abaixo do mapa (não cobre estados) */
+@media (max-width:620px){
+  .mapa-palco{aspect-ratio:auto}
+  .mapa-2d{position:relative;inset:auto;display:block;height:auto;aspect-ratio:1/1;padding:2%}
+  .mapa-nacional{position:static;max-width:none;width:calc(100% - 16px);margin:0 8px 8px}
+  .mn-linha{font-size:.92rem}.mn-linha strong{font-size:1.05rem}
+}
+/* celular: tabelas viram cartões, sem rolagem lateral */
+@media (max-width:620px){
+  .tabela-wrap{overflow:visible;padding:0}
+  .tabela-estados,.tabela-reg{min-width:0;font-size:.88rem}
+  .tabela-estados thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+  .tabela-estados,.tabela-estados tbody,.tabela-estados tr,.tabela-estados th,.tabela-estados td{display:block;width:auto}
+  .tabela-estados caption{display:block;padding:12px 14px 4px}
+  .tabela-estados tr{padding:10px 14px;border-top:1px solid var(--borda)}
+  .tabela-estados tbody th,.tabela-estados td{border:0;padding:3px 0}
+  .tabela-estados tbody th{font-size:.98rem}
+  .tabela-estados td[data-label]{display:grid;grid-template-columns:96px 1fr;gap:8px;align-items:start}
+  .tabela-estados td[data-label]::before{content:attr(data-label);color:var(--txt3);font-size:.74rem;text-transform:uppercase;letter-spacing:.05em;padding-top:2px}
+  .tab-cand{display:flex;margin:0 0 4px;white-space:normal}
+  .tabela-reg td.num{white-space:normal}
+  .mini-ficha{word-break:break-word}
+}

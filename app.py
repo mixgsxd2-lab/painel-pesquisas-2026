@@ -182,7 +182,7 @@ def criar_app() -> Flask:
         m = dados.media("presidente", "BR")
         if not m:
             return None
-        return {"itens": [{"rotulo": i["rotulo"], "valor": i["valor"], "cor": i["cor"]} for i in m["itens"]],
+        return {"itens": [{"rotulo": i["rotulo"], "valor": i["valor"], "cor": i["cor"], "foto": i.get("foto")} for i in m["itens"]],
                 "n": m["n_pesquisas"], "tipo_nome": m["tipo_nome"]}
 
     def pacote_mapa():
