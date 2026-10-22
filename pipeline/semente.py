@@ -25,10 +25,13 @@ def exportar() -> int:
     if settings.DEMO:
         return 0
     with _trava:
-        pesq = [dict(r) for r in db.q("SELECT * FROM pesquisas WHERE status = 'PUBLICADA'")]
-        if not pesq:
+        pesq = [dict(r) for r in db.q("SELECT * FROM pesquisas WHERE status != 'SEM_REGISTRO'")]
+        if not any(p["status"] == "PUBLICADA" for p in pesq):
             return 0
-        chaves = {(p["protocolo"], p["cargo"]) for p in pesq}
+        for p in pesq:  # todas as registradas; textos longos só nas publicadas
+            if p["status"] != "PUBLICADA":
+                p["metodologia"] = p["plano_amostral"] = ""
+        chaves = {(p["protocolo"], p["cargo"]) for p in pesq if p["status"] == "PUBLICADA"}
         res = [dict(r) for r in db.q("SELECT * FROM resultados") if (r["protocolo"], r["cargo"]) in chaves]
         cands = [dict(r) for r in db.q("SELECT * FROM candidatos")]
         meta = {r["chave"]: r["valor"] for r in db.q(
@@ -39,7 +42,7 @@ def exportar() -> int:
         tmp.write_text(json.dumps({"pesquisas": pesq, "resultados": res, "candidatos": cands, "meta": meta},
                                   ensure_ascii=False, indent=1), encoding="utf-8")
         tmp.replace(ARQUIVO)
-        return len(pesq)
+        return sum(1 for p in pesq if p["status"] == "PUBLICADA")
 
 
 def _inserir(c, tabela: str, linhas: list[dict]) -> None:

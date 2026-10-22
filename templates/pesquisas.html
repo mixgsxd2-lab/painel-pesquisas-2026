@@ -42,7 +42,7 @@
   </div>
 </form>
 
-<p class="contador" aria-live="polite"><strong class="num">{{ total }}</strong> pesquisa{{ 's' if total != 1 }} publicada{{ 's' if total != 1 }} · mais recentes primeiro</p>
+<p class="contador" aria-live="polite"><strong class="num">{{ total_tse }}</strong> pesquisas do 2º turno registradas no TSE · <strong class="num">{{ total }}</strong> com números confirmados{% if registradas %} · <a href="#registradas">{{ registradas|length }} sem números ainda</a>{% endif %}</p>
 
 {% if pesquisas %}
 <div class="grade-cards">{% for p in pesquisas %}{{ ui.card_pesquisa(p, nivel=2) }}{% endfor %}</div>
@@ -56,5 +56,30 @@
   <span class="num">Página {{ pagina }} de {{ paginas }}</span>
   {% if pagina < paginas %}<a class="btn btn-vidro" rel="next" href="?{{ args_base|urlencode }}{{ '&' if args_base }}p={{ pagina + 1 }}">Mais antigas →</a>{% endif %}
 </nav>
+{% endif %}
+{% if registradas and pagina == 1 %}
+<section class="secao" id="registradas" aria-labelledby="h-reg">
+  <h2 id="h-reg">Registradas no TSE, ainda sem números confirmados</h2>
+  <p class="secao-sub">Dados oficiais do registro. Os percentuais aparecem aqui quando a pesquisa for divulgada e os números forem confirmados nas fontes.</p>
+  <div class="tabela-wrap glass">
+  <table class="tabela-estados tabela-reg">
+    <thead><tr><th scope="col">Instituto</th><th scope="col">Cargo</th><th scope="col">Local</th><th scope="col">Registro</th><th scope="col">Coleta</th><th scope="col">Entrevistas</th><th scope="col">Divulgação</th><th scope="col">Situação</th></tr></thead>
+    <tbody>
+    {% for r in registradas %}
+      <tr>
+        <th scope="row">{{ r.instituto }}</th>
+        <td>{{ r.cargo_nome }}</td>
+        <td>{{ r.local_curto }}</td>
+        <td class="num"><a href="{{ PESQELE_URL }}" target="_blank" rel="noopener" data-copiar="{{ r.registro }}" title="Conferir no TSE (copia o número)">{{ r.registro }}</a></td>
+        <td class="num">{{ r.periodo_inicio|data_curta }}–{{ r.periodo_fim|data_curta }}</td>
+        <td class="num">{{ r.entrevistados|num }}</td>
+        <td class="num">{{ r.data_divulgacao|data_curta }}</td>
+        <td><span class="sit{% if r.situacao == 'Divulgação prevista' %} sit-futura{% endif %}">{{ r.situacao }}</span></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</section>
 {% endif %}
 {% endblock %}

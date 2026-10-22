@@ -123,9 +123,41 @@ def pesquisa(protocolo: str) -> list[dict]:
     return [p for p in pesquisas_publicadas() if p["protocolo"] == protocolo]
 
 
+def pesquisas_registradas(cargo: str | None = None, uf: str | None = None, instituto: str | None = None,
+                          de: str | None = None, ate: str | None = None) -> list[dict]:
+    """Pesquisas registradas no TSE para o 2º turno que AINDA NÃO têm números confirmados.
+    Mostramos só os dados oficiais do registro (sem percentuais)."""
+    def carregar():
+        sql = ("SELECT * FROM pesquisas WHERE status IN ('PENDENTE','AGUARDANDO_DIVULGACAO','DESCARTADA')")
+        params: list = []
+        for cond, val in (("cargo = ?", cargo), ("abrangencia = ?", uf.upper() if uf else None),
+                          ("instituto_chave = ?", instituto), ("data_divulgacao >= ?", de),
+                          ("data_divulgacao <= ?", ate)):
+            if val:
+                sql += f" AND {cond}"
+                params.append(val)
+        sql += " ORDER BY data_divulgacao DESC, periodo_fim DESC"
+        hoje = settings.agora().date().isoformat()
+        out = []
+        for r in db.q(sql, params):
+            d = dict(r)
+            d["cargo_nome"] = CARGOS[d["cargo"]]["nome"]
+            d["abrangencia_nome"] = abrangencia_nome(d.get("abrangencia"))
+            d["local_curto"] = "Nacional" if d.get("abrangencia") == "BR" else (d.get("abrangencia") or "—")
+            d["contratantes"] = db.jloads(d.get("contratantes"), [])
+            if (d.get("data_divulgacao") or "") > hoje:
+                d["situacao"] = "Divulgação prevista"
+            else:
+                d["situacao"] = "Números ainda não confirmados"
+            out.append(d)
+        return out
+
+    return _memo(("reg", cargo, uf, instituto, de, ate), carregar)
+
+
 def institutos_publicados() -> list[dict]:
     vistos: dict[str, str] = {}
-    for p in pesquisas_publicadas():
+    for p in pesquisas_publicadas() + pesquisas_registradas():
         vistos.setdefault(p["instituto_chave"], p["instituto"])
     return sorted(({"chave": k, "nome": v} for k, v in vistos.items()), key=lambda i: i["nome"].lower())
 

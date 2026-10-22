@@ -318,6 +318,8 @@ def criar_app() -> Flask:
             "pesquisas.html", seo=s, pesquisas=itens, total=total, pagina=pagina, paginas=paginas,
             filtros={"cargo": f_cargo, "uf": f_uf, "instituto": f_inst, "de": f_de, "ate": f_ate},
             institutos=dados.institutos_publicados(), args_base=args_base,
+            registradas=dados.pesquisas_registradas(cargo=f_cargo, uf=f_uf, instituto=f_inst, de=f_de, ate=f_ate),
+            total_tse=db.q1("SELECT COUNT(*) n FROM pesquisas WHERE status != 'SEM_REGISTRO'")["n"],
         )
 
     @app.route("/pesquisas/<slug>")

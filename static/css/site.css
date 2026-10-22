@@ -303,3 +303,12 @@ details.mais .ficha{border-top:0;padding-top:4px}
 .rotulo-pct{font-size:28px;font-weight:800;fill:#fff;font-variant-numeric:tabular-nums}
 .rotulo-linha .rotulo-uf{font-size:15px}
 .rotulo-linha .rotulo-pct{font-size:18px}
+
+/* pesquisas registradas sem números */
+.tabela-reg{min-width:760px;font-size:.84rem}
+.tabela-reg th[scope=row]{font-weight:500}
+.tabela-reg a{color:var(--txt);text-decoration:none;border-bottom:1px dotted var(--borda2)}
+.sit{font-size:.76rem;color:var(--txt3);white-space:nowrap}
+.sit-futura{color:#C4B5FD}
+.contador a{color:#C4B5FD}
+.tabela-reg td.num{white-space:nowrap}
