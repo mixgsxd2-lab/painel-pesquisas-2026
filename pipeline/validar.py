@@ -213,6 +213,25 @@ def descartar(p, motivos: list[str]) -> None:
     log.info("DESCARTADA %s/%s: %s", p["registro"], p["cargo"], motivo)
 
 
+def validar_uma(protocolo: str, cargo: str) -> str | None:
+    """Valida (e publica, se passar) uma única pesquisa logo após a busca."""
+    p = db.q1("SELECT * FROM pesquisas WHERE protocolo = ? AND cargo = ?", (protocolo, cargo))
+    if not p or p["status"] not in ("PENDENTE", "DESCARTADA"):
+        return None
+    fontes = db.q("SELECT * FROM fontes WHERE protocolo = ? AND cargo = ? ORDER BY id", (protocolo, cargo))
+    validados, motivos, extras = avaliar(p, fontes)
+    if validados:
+        publicar(p, validados, extras)
+        try:
+            from pipeline import semente
+            semente.exportar()
+        except Exception:
+            log.exception("Falha ao salvar a semente")
+        return "PUBLICADA"
+    descartar(p, motivos)
+    return "DESCARTADA"
+
+
 def executar() -> dict:
     # avalia as pesquisas que passaram pela busca desde a última avaliação
     lista = db.q(

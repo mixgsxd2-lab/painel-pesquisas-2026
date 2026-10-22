@@ -231,14 +231,15 @@ def mapa(cargo: str) -> dict:
                     if len(cs) >= 2:
                         item.update({"status": "apuracao", "vantagem": round((cs[0]["pct"] or 0) - (cs[1]["pct"] or 0), 1),
                                      "lider": cs[0]["nome"], "lider_cor": cs[0]["cor"], "cor": cs[0]["cor"],
-                                     "pst": a["pst"]})
+                                     "pst": a["pst"], "pct_lider": cs[0]["pct"]})
                         item["intensidade"] = min(1.0, 0.25 + item["vantagem"] / 20)
                     estados.append(item)
                     continue
             m = media(cargo, uf)
             if m:
+                frente = max(m["itens"], key=lambda i: i["valor"])
                 item.update({"status": "com_pesquisas", "vantagem": m["vantagem"], "n": m["n_pesquisas"],
-                             "tipo": m["tipo"]})
+                             "tipo": m["tipo"], "pct_lider": frente["valor"]})
                 if m["lider"]:
                     item.update({"lider": m["lider"]["rotulo"], "lider_cor": m["lider"]["cor"], "cor": m["lider"]["cor"]})
                     item["intensidade"] = min(1.0, 0.25 + m["vantagem"] / 20)

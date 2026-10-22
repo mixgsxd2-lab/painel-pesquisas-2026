@@ -95,6 +95,7 @@ GOOGLE_CSE_CX = _env("GOOGLE_CSE_CX")
 BUSCA_BING_NOTICIAS = _env_bool("BUSCA_BING_NOTICIAS", True)  # gratuito, sem chave
 BUSCA_DUCKDUCKGO = _env_bool("BUSCA_DUCKDUCKGO", False)  # costuma bloquear servidores
 MAX_PESQUISAS_POR_RODADA = int(_env("MAX_PESQUISAS_POR_RODADA", "40"))
+BUSCA_PARALELA = int(_env("BUSCA_PARALELA", "4"))  # pesquisas buscadas ao mesmo tempo
 MAX_URLS_POR_PESQUISA = int(_env("MAX_URLS_POR_PESQUISA", "10"))
 USER_AGENT = f"PainelPesquisas2026Bot/1.0 (+{SITE_URL}/metodologia)"
 

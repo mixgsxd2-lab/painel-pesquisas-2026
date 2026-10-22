@@ -203,7 +203,27 @@
           <path d="{{ caminhos[e.uf] }}" style="--c:{{ e.cor }};--i:{{ e.intensidade }}"/>
         </a>
         {% endfor %}
+        {% set centros = mapa_centros() %}
+        {% for c in ['presidente', 'governador'] %}
+        <g class="rotulos" data-cargo="{{ c }}"{% if c != cargo %} hidden{% endif %} aria-hidden="true">
+          {% for e in mapa[c].estados %}{% if e.pct_lider is defined and e.pct_lider is not none and e.uf in centros %}
+          <g class="rotulo" transform="translate({{ '%.0f'|format(centros[e.uf][0]) }},{{ '%.0f'|format(centros[e.uf][1]) }})">
+            <text class="rotulo-uf" y="-10">{{ e.uf }}</text>
+            <text class="rotulo-pct" y="22">{{ e.pct_lider|pct(0) }}</text>
+          </g>
+          {% endif %}{% endfor %}
+        </g>
+        {% endfor %}
       </svg>
+      {% if mapa.nacional %}
+      <button type="button" class="mapa-nacional" data-uf="BR" aria-label="Ver a média nacional para presidente e as pesquisas usadas">
+        <span class="mn-tit">Média nacional · presidente</span>
+        {% for i in mapa.nacional.itens|sort(attribute='valor', reverse=True) %}
+        <span class="mn-linha"><i class="ponto" style="--c:{{ i.cor }}"></i>{{ i.rotulo|nome_proprio }} <strong class="num">{{ i.valor|pct }}</strong></span>
+        {% endfor %}
+        <span class="mn-sub">{{ mapa.nacional.tipo_nome }} · {{ mapa.nacional.n }} pesquisa{{ 's' if mapa.nacional.n != 1 }} · toque para ver os dados</span>
+      </button>
+      {% endif %}
       {% else %}
       <p class="mapa-indisp">Mapa indisponível no momento — veja a tabela abaixo.</p>
       {% endif %}

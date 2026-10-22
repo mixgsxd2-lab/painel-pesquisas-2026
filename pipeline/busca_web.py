@@ -70,12 +70,22 @@ def _google_cse(q: str) -> list[dict]:
     return [{"url": i.get("link"), "titulo": i.get("title", "")} for i in r.json().get("items", [])]
 
 
+import threading
+
+_trava_bing = threading.Lock()
+_ultimo_bing = [0.0]
+
+
 def _bing_noticias(q: str) -> list[dict]:
     """Feed RSS público do Bing Notícias. Os links vêm como apiclick.aspx?url=<endereço real>."""
     import time
     import xml.etree.ElementTree as ET
 
-    time.sleep(1.0)  # educação com o serviço
+    with _trava_bing:  # no máximo ~1 consulta por segundo, mesmo com várias threads
+        espera = _ultimo_bing[0] + 1.0 - time.time()
+        if espera > 0:
+            time.sleep(espera)
+        _ultimo_bing[0] = time.time()
     r = http.sessao().get(
         "https://www.bing.com/news/search",
         params={"q": q, "format": "rss", "setlang": "pt-BR", "cc": "BR", "count": 30},

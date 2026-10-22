@@ -44,6 +44,12 @@ def criar_app() -> Flask:
         pass
 
     db.init_db()
+    try:  # banco vazio (ex.: reinício no plano gratuito): carrega as pesquisas já validadas
+        from pipeline import semente
+
+        semente.importar_se_vazio()
+    except Exception:
+        app.logger.exception("semente")
 
     # ------------------------------------------------------------------ filtros/contexto
     app.jinja_env.filters.update(pct=pct, data_br=data_br, data_curta=data_curta, datahora_br=datahora_br,
@@ -99,6 +105,7 @@ def criar_app() -> Flask:
             "VIZINHOS": VIZINHOS,
             "media_de": dados.media,
             "mapa_svg": geo.caminhos_svg,
+            "mapa_centros": lambda: {uf: e["centro"] for uf, e in geo.projetado().items()},
             "contagem": contagem,
             "atualizado_global": dados.atualizado_em,
             "atualizando": gatilho.em_andamento,
@@ -171,11 +178,19 @@ def criar_app() -> Flask:
             "modificado_iso": seo.iso(modificado),
         }
 
+    def resumo_nacional():
+        m = dados.media("presidente", "BR")
+        if not m:
+            return None
+        return {"itens": [{"rotulo": i["rotulo"], "valor": i["valor"], "cor": i["cor"]} for i in m["itens"]],
+                "n": m["n_pesquisas"], "tipo_nome": m["tipo_nome"]}
+
     def pacote_mapa():
         return {
             "presidente": dados.mapa("presidente"),
             "governador": dados.mapa("governador"),
             "paleta": cand_mod.paleta(),
+            "nacional": resumo_nacional(),
             "cor_sem_dados": cand_mod.cor_sem_dados(),
             "geo_url": url_for("malha"),
         }
@@ -415,7 +430,7 @@ def criar_app() -> Flask:
     @app.route("/fragmento/<cargo>/<uf>")
     def fragmento(cargo, uf):
         UF = uf.upper()
-        if cargo not in CARGOS or UF not in UFS:
+        if cargo not in CARGOS or not (UF in UFS or (UF == "BR" and cargo == "presidente")):
             abort(404)
         sem_2t = cargo == "governador" and UF not in dados.ufs_2t_governador()
         m = None if sem_2t else dados.media(cargo, UF)

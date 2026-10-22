@@ -65,6 +65,9 @@ def rodada() -> dict:
         _etapa("buscar_resultados", buscar_resultados.executar, resumo)
         _etapa("validar", validar.executar, resumo)
         _etapa("apuracao", apuracao.coletar, resumo)
+        from pipeline import semente
+
+        _etapa("semente", semente.exportar, resumo)
         _etapa("sitemap", sitemap.gerar, resumo)
         _etapa("og_images", og_images.gerar_todas, resumo)
         from core import audiencia

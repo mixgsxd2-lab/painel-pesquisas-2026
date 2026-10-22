@@ -175,13 +175,24 @@ def executar() -> dict:
     if not busca_web.provedores():
         log.warning("Nenhum provedor de busca configurado; etapa de busca ignorada.")
         return {"processadas": 0}
+    from concurrent.futures import ThreadPoolExecutor
+
+    from pipeline import validar
+
     lista = _pesquisas_da_rodada()
-    total = 0
-    for p in lista:
+
+    def uma(p) -> int:
+        # busca e JÁ valida/publica: a pesquisa aparece no site sem esperar o fim da rodada
         try:
-            total += processar(p)
+            n = processar(p)
+            validar.validar_uma(p["protocolo"], p["cargo"])
+            return n
         except Exception:  # uma pesquisa com problema não derruba a rodada
             log.exception("Erro ao buscar %s/%s", p["protocolo"], p["cargo"])
+            return 0
+
+    with ThreadPoolExecutor(max_workers=settings.BUSCA_PARALELA) as ex:
+        total = sum(ex.map(uma, lista))
     http.limpar_cache_antigo()
     resumo = {"processadas": len(lista), "fontes_com_numeros": total}
     log.info("Busca: %s", resumo)

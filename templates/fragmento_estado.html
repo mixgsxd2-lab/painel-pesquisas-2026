@@ -1,8 +1,8 @@
 {% import "macros.html" as ui with context %}
 <header class="gaveta-cab">
   <p class="selo">{{ cargo_nome|capitalize }} · 2º turno</p>
-  <h2 id="gaveta-tit">{{ uf|nome_uf }} <span class="num">({{ uf }})</span></h2>
-  <a class="btn btn-texto" href="/{{ cargo }}/{{ uf|lower }}">Abrir página completa →</a>
+  <h2 id="gaveta-tit">{{ uf|nome_uf }}{% if uf != 'BR' %} <span class="num">({{ uf }})</span>{% else %} — pesquisas nacionais{% endif %}</h2>
+  <a class="btn btn-texto" href="{{ '/presidente' if uf == 'BR' else '/' ~ cargo ~ '/' ~ (uf|lower) }}">Abrir página completa →</a>
 </header>
 {% if sem_2_turno %}
   <div class="vazio glass"><p><strong>Sem 2º turno</strong> para governador {{ uf|no_uf }}, segundo os dados oficiais do TSE.</p>

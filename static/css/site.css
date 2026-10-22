@@ -265,3 +265,17 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--acento)}
   *,*::before,*::after{animation:none!important;transition:none!important}
   .js .barra-fill.esperando{transform:none}
 }
+
+/* ---------- porcentagens no mapa ---------- */
+.rotulo{pointer-events:none}
+.rotulo text{text-anchor:middle;font-family:var(--fonte);paint-order:stroke;stroke:#07080D;stroke-width:6px;stroke-linejoin:round}
+.rotulo-uf{font-size:20px;font-weight:600;fill:rgba(255,255,255,.75)}
+.rotulo-pct{font-size:31px;font-weight:800;fill:#fff;font-variant-numeric:tabular-nums}
+.mapa-nacional{position:absolute;left:12px;bottom:12px;z-index:2;display:flex;flex-direction:column;gap:3px;text-align:left;padding:12px 14px;border-radius:14px;background:rgba(10,11,18,.88);border:1px solid var(--borda2);color:var(--txt);font:inherit;cursor:pointer;max-width:min(270px,62%)}
+.mapa-nacional:hover{border-color:var(--acento)}
+.mn-tit{font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--acento)}
+.mn-linha{display:flex;align-items:center;gap:7px;font-size:.92rem;font-weight:600}
+.mn-linha strong{margin-left:auto;font-size:1.05rem}
+.mn-sub{font-size:.7rem;color:var(--txt3)}
+.mapa-palco[data-cargo=governador] .mapa-nacional{display:none}
+@media (max-width:620px){.mapa-nacional{left:8px;bottom:8px;padding:9px 11px}.mn-linha{font-size:.82rem}.mn-linha strong{font-size:.92rem}}

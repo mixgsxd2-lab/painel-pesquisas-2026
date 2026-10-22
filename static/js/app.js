@@ -184,6 +184,9 @@
     });
   }
 
+  var nacional = $(".mapa-nacional");
+  if (nacional) nacional.addEventListener("click", function () { abrir("BR"); });
+
   if (pilula) {
     pilula.addEventListener("click", function (ev) {
       var t = ev.target.closest("a[role=tab]");
@@ -200,6 +203,9 @@
         if (!p.hidden) prepararBarras(p);
       });
       pintar(cargo);
+      $$(".rotulos", svg).forEach(function (g) {
+        if (g.dataset.cargo === cargo) g.removeAttribute("hidden"); else g.setAttribute("hidden", "");
+      });
       fechar();
     });
   }
