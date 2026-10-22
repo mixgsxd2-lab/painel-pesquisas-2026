@@ -1439,6 +1439,38 @@
    "publicada_em": "2026-10-21T21:07:50.551685-03:00",
    "coletada_em": "2026-10-21T20:16:38.057280-03:00",
    "atualizada_em": "2026-10-21T21:07:50.551685-03:00"
+  },
+  {
+   "protocolo": "BR073372026",
+   "cargo": "presidente",
+   "registro": "BR-07337/2026",
+   "uf_registro": "BR",
+   "abrangencia": "TO",
+   "instituto": "Quaest Pesquisas, Consultoria e Projetos",
+   "instituto_razao": "QUAEST PESQUISAS, CONSULTORIA E PROJETOS LTDA.",
+   "instituto_chave": "22445600",
+   "cnpj": "22445600000104",
+   "contratantes": "[{\"nome\": \"CENTRO NORTE DE COMUNICACAO LTDA / TV ANHANGUERA\", \"valor\": 160308.0}]",
+   "pagantes": "[{\"nome\": \"CENTRO NORTE DE COMUNICACAO LTDA / TV ANHANGUERA\", \"origem\": \"\"}]",
+   "pesquisa_propria": 0,
+   "valor": 160308.0,
+   "estatistico": "Margarida Maria de Mendonca",
+   "periodo_inicio": "2026-10-10",
+   "periodo_fim": "2026-10-13",
+   "entrevistados": 1098,
+   "margem_erro": 3.0,
+   "nivel_confianca": 95.0,
+   "data_registro": "2026-10-08 22:19:49",
+   "data_divulgacao": "2026-10-14",
+   "metodologia": "Pesquisa quantitativa, de survey, que consiste na realização de entrevistas pessoais, domiciliares e presenciais, conduzidas por profissionais treinados, com a aplicação de questionários estruturados a uma amostra representativa da população votante de 16 anos ou mais residente no estado do Tocantins. O desenho amostral aplicado combina sorteio probabilístico de municípios e de setores censitários fornecidos pelo IBGE (unidades territoriais homogêneas, de tamanho similar a quadras ou blocos), dentro dos quais serão selecionadas pessoas respondentes por meio de cotas amostrais.",
+   "plano_amostral": "O público pesquisado é composto por eleitores de 16 anos ou mais residentes na área de abrangência da pesquisa. Para produzir uma amostra representativa desse público-alvo, utilizamos um desenho amostral por conglomerados que prevê três estágios. No primeiro estágio, é feito um sorteio probabilístico de municípios para comporem a amostra por meio do método PPT (Probabilidade Proporcional ao Tamanho) a partir de suas populações votantes acima de 16 anos. Dentro da lista de municípios sorteados, no segundo estágio, é realizado um sorteio probabilístico por meio do método PPT (Probabilidade Proporcional ao Tamanho) de setores censitários a serem visitados pelos entrevistadores, sorteio que tem como base o total de habitantes residentes nos setores de acordo com dados do Censo de 2022, o que garante a dispersão aleatória e estatística da amostra dentro dos territórios municipais, independentemente de divisões administrativas. Finalmente, dentro da lista de setores censitários sorteados, no último estágio são selecionados domicílios e pessoas a serem entrevistadas utilizando-se cotas amostrais para as seguintes variáveis: sexo, idade, renda familiar e escolaridade. O perfil da amostra, definido pelas cotas previstas, é o seguinte:\n\nSexo: Masculino (49%); Feminino (51%).\nFaixa etária: 16-34 anos (36%); 35-59 anos (45%); 60 ou mais (19%).\nRenda domiciliar total, incluindo pensões, benefícios e rendimentos de trabalhos informais: Até 2 salários-mínimos (32%); Mais de 2 a 5 salários-mínimos (45%); Mais de 5 salários-mínimos (23%).\nNível de instrução: Até Fundamental completo ou médio incompleto (42%); Médio completo ou superior incompleto (40%); Superior completo ou mais (18%).\n\nFonte dos dados: para a distribuição de sexo e idade, TSE-Tribunal Superior Eleitoral - setembro/2026; para a malha de setores censitários, Censo 2022 (IBGE); para a distribuição de renda domiciliar, PNADc Anual 2025, 1ª visita (IBGE); e, para a distribuição de escolaridade/instrução, PNADc trimestral 2-2026 (IBGE). A PNADc é utilizada por ser a fonte oficial mais atualizada de rendimentos do país, incluindo rendimentos informais, pensões, entre outros, e corrigindo as defasagens temporais do Censo 2022, além de ser a fonte mais atualizada de nível de instrução da população com 16 anos ou mais dada ausência de atualização obrigatória da escolaridade no registro de eleitores do TSE.\n\nEstá prevista eventual pós-estratificação da amostra, por meio de algoritmos de calibração (rake) e modelos (MrP), para correção (1) de estimativas e (2) das distribuições de variáveis que medem o perfil da população.\n\nDentro do público-alvo anteriormente descrito, serão realizadas 1.098 entrevistas. O nível de confiança das estimativas é de 95% e a margem de erro máxima prevista, atendendo às diretivas do TSE e usando cálculo para amostra aleatória simples (AAS) com correção para desenho com conglomerados como aproximação, é de cerca de 3 pontos percentuais para mais ou para menos em relação aos totais da amostra.\n\nPagante (s) do trabalho: CNPJ 01755356000289 - CENTRO NORTE DE COMUNICACAO LTDA / TV ANHANGUERA",
+   "status": "PUBLICADA",
+   "motivo": null,
+   "tentativas": 3,
+   "ultima_tentativa": "2026-10-21T21:16:29.418073-03:00",
+   "publicada_em": "2026-10-21T21:16:34.348987-03:00",
+   "coletada_em": "2026-10-21T20:16:38.057280-03:00",
+   "atualizada_em": "2026-10-21T21:16:34.348987-03:00"
   }
  ],
  "resultados": [
@@ -1897,6 +1929,14 @@
    "dados": "{\"candidatos\":{\"22\":45.0,\"13\":44.0},\"brancos_nulos\":9.0,\"indecisos\":2.0}",
    "fontes": "[\"https://veja.abril.com.br/politica/a-nova-pesquisa-quaest-sobre-a-disputa-flavio-x-lula-a-quatro-dias-do-2o-turno/\",\"https://exame.com/brasil/pesquisa-para-presidente-quaest-flavio-bolsonaro-tem-45-e-lula-44-a-4-dias-do-2o-turno/\",\"https://www.diariodepernambuco.com.br/politica/2026/10/11727190-pesquisa-quaest-flavio-e-lula-estao-tecnicamente-empatados-no-2-turno.html\",\"https://ndmais.com.br/politica/quaest-flavio-bolsonaro-lula-segundo-turno-21-outubro/\",\"https://acessepolitica.com.br/noticia/183053/quaest-flavio-bolsonaro-tem-45-e-lula-registra-44-no-segundo-turno\"]",
    "publicado_em": "2026-10-21T21:10:30.820844-03:00"
+  },
+  {
+   "protocolo": "BR073372026",
+   "cargo": "presidente",
+   "tipo": "totais",
+   "dados": "{\"candidatos\":{\"22\":48.0,\"13\":42.0},\"brancos_nulos\":6.0,\"indecisos\":4.0}",
+   "fontes": "[\"https://g1.globo.com/to/tocantins/eleicoes/2026/noticia/2026/10/14/quaest-to-presidente-segundo-turno-14-outubro.ghtml\",\"https://www.cartacapital.com.br/politica/como-esta-a-disputa-entre-lula-e-flavio-bolsonaro-no-espirito-santo-e-tocantins-segundo-a-quaest/\"]",
+   "publicado_em": "2026-10-21T21:16:34.348987-03:00"
   }
  ],
  "candidatos": [
@@ -2043,7 +2083,7 @@
  ],
  "meta": {
   "candidatos_atualizados_em": "2026-10-21T21:07:58.028254-03:00",
-  "dados_atualizados_em": "2026-10-21T21:10:30.820844-03:00",
+  "dados_atualizados_em": "2026-10-21T21:16:34.348987-03:00",
   "atualizado:presidente:BR": "2026-10-21T21:10:30.820844-03:00",
   "atualizado:governador:AM": "2026-10-21T21:07:50.330648-03:00",
   "atualizado:governador:AC": "2026-10-21T21:09:46.669604-03:00",
@@ -2053,6 +2093,7 @@
   "atualizado:presidente:AM": "2026-10-21T21:07:50.431113-03:00",
   "atualizado:presidente:DF": "2026-10-21T21:09:22.908448-03:00",
   "atualizado:presidente:ES": "2026-10-21T21:07:50.551685-03:00",
-  "atualizado:governador:RN": "2026-10-21T21:08:49.759005-03:00"
+  "atualizado:governador:RN": "2026-10-21T21:08:49.759005-03:00",
+  "atualizado:presidente:TO": "2026-10-21T21:16:34.348987-03:00"
  }
 }
