@@ -215,7 +215,6 @@ def mapa(cargo: str) -> dict:
     def calc():
         apur = em_apuracao()
         ufs2t = set(ufs_2t_governador())
-        nac = media("presidente", "BR") if cargo == "presidente" else None
         estados = []
         for uf, info in UFS.items():
             item = {"uf": uf, "nome": info["nome"], "url": f"/{cargo}/{uf.lower()}",
@@ -246,15 +245,6 @@ def mapa(cargo: str) -> dict:
                     item["intensidade"] = min(1.0, 0.25 + m["vantagem"] / 20)
                 else:
                     item["status"] = "empate"
-            elif cargo == "presidente" and nac:
-                # sem pesquisa estadual registrada: mostra a média NACIONAL, sinalizada como tal
-                frente = max(nac["itens"], key=lambda i: i["valor"])
-                item.update({"status": "nacional", "vantagem": nac["vantagem"], "n": nac["n_pesquisas"],
-                             "tipo": nac["tipo"], "pct_lider": frente["valor"]})
-                if nac["lider"]:
-                    item.update({"lider": nac["lider"]["rotulo"], "lider_cor": nac["lider"]["cor"],
-                                 "cor": nac["lider"]["cor"]})
-                    item["intensidade"] = min(1.0, 0.25 + nac["vantagem"] / 20)
             estados.append(item)
         return {"cargo": cargo, "apuracao": apur, "estados": estados}
 

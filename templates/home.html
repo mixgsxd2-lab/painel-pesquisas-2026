@@ -4,9 +4,8 @@
 {% block conteudo %}
 <section class="hero">
   <div class="hero-txt">
-    <p class="sobretitulo">Eleições 2026 · 2º turno · domingo, 25 de outubro</p>
     <h1>Pesquisas do 2º turno 2026 para presidente e governador registradas no TSE</h1>
-    <p class="lead">Média das pesquisas registradas, mapa por estado e a lista completa com instituto, contratante, margem de erro e fontes — atualizado automaticamente.</p>
+    <p class="lead">Média das pesquisas registradas no TSE, por estado.</p>
     {{ ui.atualizado(seo.modificado) }}
   </div>
   <div class="hero-lado">
@@ -23,7 +22,6 @@
     {% if apur_br %}
       {{ ui.card_apuracao(apur_br, 'Presidente — Brasil', nivel=3) }}
     {% elif media_br %}
-      <p class="resposta">{% if media_br.lider %}Na média das pesquisas nacionais registradas no TSE e publicadas aqui, {{ media_br.lider.rotulo|nome_proprio }} aparece à frente, com diferença de {{ media_br.vantagem|dec }} ponto(s) ({{ media_br.tipo_nome|lower }}).{% else %}Na média das pesquisas nacionais registradas no TSE e publicadas aqui, os candidatos aparecem com a mesma média.{% endif %} Os dados de cada pesquisa usada estão logo abaixo da média.</p>
       {{ ui.card_media(media_br, 'Presidente — Brasil (pesquisas nacionais)', nivel=3, lista_aberta=False) }}
     {% else %}
       <div class="vazio glass">
@@ -34,7 +32,6 @@
   </section>
   <section class="secao" aria-labelledby="h-pres-uf">
     <h2 id="h-pres-uf">Pesquisas para presidente por estado</h2>
-    <p class="secao-sub">Somente pesquisas com abrangência estadual. Estados sem pesquisa ficam em cinza — nunca são preenchidos com dados nacionais.</p>
     {{ ui.tabela_estados(mapa.presidente, 'presidente', ufs2t) }}
   </section>
 </div>
@@ -53,15 +50,5 @@
   </section>
 </div>
 
-<section class="secao" aria-labelledby="h-rec">
-  <h2 id="h-rec">Pesquisas nacionais mais recentes</h2>
-  {% if pesquisas_br %}
-  <div class="grade-cards">
-    {% for p in pesquisas_br %}{{ ui.card_pesquisa(p, nivel=3) }}{% endfor %}
-  </div>
-  {% else %}
-  <p class="vazio glass">Nenhuma pesquisa nacional publicada até agora.</p>
-  {% endif %}
-  <p class="ver-mais"><a class="btn btn-vidro" href="/pesquisas">Ver todas as pesquisas e fontes →</a></p>
-</section>
+<p class="ver-mais"><a class="btn btn-vidro" href="/pesquisas">Ver todas as pesquisas →</a></p>
 {% endblock %}

@@ -6,7 +6,7 @@
   <div class="hero-txt">
     {{ ui.migalhas(seo.migalhas) }}
     <h1>Pesquisas para {{ cargo_nome }} {{ uf|no_uf }} ({{ uf }}) no 2º turno de 2026</h1>
-    <p class="lead">{% if sem_2_turno %}Não consta 2º turno para governador {{ uf|no_uf }} nos dados oficiais do TSE.{% else %}Todas as pesquisas registradas no TSE para {{ cargo_nome }} {{ uf|no_uf }} no 2º turno, com margem de erro, instituto, contratante e a média das pesquisas registradas.{% endif %}</p>
+    
     {{ ui.atualizado(seo.modificado) }}
   </div>
 </section>
@@ -23,19 +23,13 @@
 <section class="secao" aria-labelledby="h-lider">
   <h2 id="h-lider">{{ faq[0][0] }}</h2>
   {% if apur %}{{ ui.card_apuracao(apur, (cargo_nome|capitalize) ~ ' — ' ~ (uf|nome_uf), nivel=3) }}{% endif %}
-  <p class="resposta">{{ faq[0][1] }}</p>
   {% if media %}
     {{ ui.card_media(media, (cargo_nome|capitalize) ~ ' — ' ~ (uf|nome_uf) ~ ' (' ~ uf ~ ')', nivel=3) }}
   {% else %}
     <div class="vazio glass">
-      {% if media_nacional %}
-      <p><strong>Não há pesquisa estadual registrada</strong> no TSE para presidente {{ uf|no_uf }} no 2º turno. O mapa mostra o estado com a <strong>média nacional</strong> (abaixo), que não é um resultado específico do estado.</p>
-      {% else %}
-      <p><strong>Sem pesquisas registradas</strong> publicadas para {{ cargo_nome }} {{ uf|no_uf }}.</p>
-      {% endif %}
+      <p><strong>Sem pesquisas registradas</strong> publicadas para {{ cargo_nome }} {{ uf|no_uf }}.{% if cargo == 'presidente' %} <a href="/presidente">Ver a média nacional</a>.{% endif %}</p>
       {% if cands %}<p>Candidatos no 2º turno, na ordem da urna: {% for c in cands %}{{ c.nome_urna|nome_proprio }} ({{ c.partido }}){% if not loop.last %} e {% endif %}{% endfor %}.</p>{% endif %}
     </div>
-    {% if media_nacional %}{{ ui.card_media(media_nacional, 'Presidente — média nacional', nivel=3, lista_aberta=False) }}{% endif %}
   {% endif %}
 </section>
 

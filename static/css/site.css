@@ -249,8 +249,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--acento)}
   .mapa-barra{flex-direction:column;align-items:stretch}
   .pilula{align-self:center}
   .legenda{justify-content:center}
-  .gaveta{position:fixed;z-index:70;left:0;right:0;bottom:calc(var(--aviso-h) + env(safe-area-inset-bottom));max-height:calc(86svh - var(--aviso-h));border-radius:20px 20px 0 0;background:#10111a;border:1px solid var(--borda2);border-bottom:0;box-shadow:0 -12px 40px rgba(0,0,0,.5);transform:translateY(105%);transition:transform .3s cubic-bezier(.2,.8,.2,1);padding-bottom:env(safe-area-inset-bottom)}
-  .gaveta.aberta{transform:translateY(0)}
+  .gaveta{position:fixed;z-index:70;left:0;right:0;bottom:calc(var(--aviso-h) + env(safe-area-inset-bottom));max-height:calc(86svh - var(--aviso-h));border-radius:20px 20px 0 0;background:#10111a;border:1px solid var(--borda2);border-bottom:0;box-shadow:0 -12px 40px rgba(0,0,0,.5);transform:translateY(calc(100% + var(--aviso-h) + 60px));visibility:hidden;transition:transform .3s cubic-bezier(.2,.8,.2,1),visibility 0s .3s;padding-bottom:env(safe-area-inset-bottom)}
+  .gaveta.aberta{transform:translateY(0);visibility:visible;transition:transform .3s cubic-bezier(.2,.8,.2,1)}
   .gaveta-alca{display:block;align-self:center;flex:none;width:64px;height:22px;margin:6px auto 0;border:0;background:none;cursor:pointer}
   .gaveta-alca span{display:block;width:40px;height:4px;margin:0 auto;border-radius:999px;background:rgba(255,255,255,.3)}
   .gaveta-corpo{padding:8px 16px 20px}
@@ -267,10 +267,6 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--acento)}
 }
 
 /* ---------- porcentagens no mapa ---------- */
-.rotulo{pointer-events:none}
-.rotulo text{text-anchor:middle;font-family:var(--fonte);paint-order:stroke;stroke:#07080D;stroke-width:6px;stroke-linejoin:round}
-.rotulo-uf{font-size:20px;font-weight:600;fill:rgba(255,255,255,.75)}
-.rotulo-pct{font-size:31px;font-weight:800;fill:#fff;font-variant-numeric:tabular-nums}
 .mapa-nacional{position:absolute;left:12px;bottom:12px;z-index:2;display:flex;flex-direction:column;gap:3px;text-align:left;padding:12px 14px;border-radius:14px;background:rgba(10,11,18,.88);border:1px solid var(--borda2);color:var(--txt);font:inherit;cursor:pointer;max-width:min(270px,62%)}
 .mapa-nacional:hover{border-color:var(--acento)}
 .mn-tit{font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--acento)}
@@ -280,7 +276,30 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--acento)}
 .mapa-palco[data-cargo=governador] .mapa-nacional{display:none}
 @media (max-width:620px){.mapa-nacional{left:8px;bottom:8px;padding:9px 11px}.mn-linha{font-size:.82rem}.mn-linha strong{font-size:.92rem}}
 
-/* estados sem pesquisa estadual de presidente: média nacional em tom claro */
-.mapa-2d .uf-nacional path{fill:color-mix(in srgb,var(--c) 26%,#1b1e29)}
-.leg i.nacional{background:color-mix(in srgb,var(--c) 26%,#1b1e29);border:1px solid var(--borda2)}
-.aviso-nacional{margin-bottom:12px}
+
+/* ---------- minimalista ---------- */
+.card{padding:18px}
+.cp-cab{margin-bottom:10px}
+.cp-cab .card-tit{margin:0}
+.card-pesquisa .barra-valor{font-size:1.1rem}
+.extras-linha{margin:6px 0 0;font-size:.8rem;color:var(--txt3)}
+details.mais{margin-top:12px}
+details.mais>summary{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border-radius:999px;background:var(--sup2);border:1px solid var(--borda);font-size:.8rem;font-weight:600;color:var(--txt2)}
+details.mais>summary:hover{color:var(--txt);border-color:var(--borda2)}
+details.mais[open]>summary{margin-bottom:6px}
+details.mais .ficha{border-top:0;padding-top:4px}
+.tabela-det>summary{margin-bottom:10px}
+.vazio-simples{color:var(--txt2);margin:4px 0 12px}
+.link-btn{background:none;border:0;padding:0;color:#C4B5FD;font:inherit;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.secao{margin:36px 0}
+.gaveta-cab{margin-bottom:10px}
+.gaveta-cab .btn-texto{padding:4px 0}
+
+/* rótulos do mapa: sigla de todos os estados + % onde há pesquisa */
+.rotulo{pointer-events:none}
+.rotulo text{text-anchor:middle;font-family:var(--fonte);paint-order:stroke;stroke:#07080D;stroke-width:5px;stroke-linejoin:round}
+.rotulo-uf{font-size:19px;font-weight:600;fill:rgba(255,255,255,.6)}
+.rotulo.com-dado .rotulo-uf{fill:rgba(255,255,255,.85)}
+.rotulo-pct{font-size:28px;font-weight:800;fill:#fff;font-variant-numeric:tabular-nums}
+.rotulo-linha .rotulo-uf{font-size:15px}
+.rotulo-linha .rotulo-pct{font-size:18px}

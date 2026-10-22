@@ -41,6 +41,14 @@ def soma(bloco: dict) -> float:
     return sum(bloco["candidatos"].values()) + (bloco.get("brancos_nulos") or 0) + (bloco.get("indecisos") or 0)
 
 
+def pesquisa_unica(p) -> bool:
+    """O instituto tem só esta pesquisa para este cargo e abrangência no 2º turno?"""
+    r = db.q1("SELECT COUNT(*) n FROM pesquisas WHERE instituto_chave = ? AND cargo = ? AND "
+              "COALESCE(abrangencia, '') = COALESCE(?, '') AND status != 'SEM_REGISTRO'",
+              (p["instituto_chave"], p["cargo"], p["abrangencia"]))
+    return bool(r) and r["n"] == 1
+
+
 def checar_datas(p) -> str | None:
     reg = parse_data(p["data_registro"])
     div = parse_data(p["data_divulgacao"])
@@ -75,12 +83,18 @@ def avaliar(p, fontes: list) -> tuple[dict, list[str], dict]:
     if not fontes:
         return {}, ["Nenhuma fonte encontrada na web"], extras
     com_registro = [f for f in fontes if f["registro_encontrado"]]
-    if not com_registro:
+    # sem o número na página: só vale se o instituto tem UMA única pesquisa desta disputa
+    # (não há outra com que confundir) e a página cita o instituto
+    unica = pesquisa_unica(p)
+    sem_registro_ok = [f for f in fontes if not f["registro_encontrado"] and unica
+                       and db.jloads(f["contexto_ok"], {}).get("instituto")]
+    candidatas = com_registro + sem_registro_ok
+    if not candidatas:
         return {}, ["Número de registro não aparece em nenhuma fonte encontrada"], extras
 
     elegiveis = []
     falhas_ctx = []
-    for f in com_registro:
+    for f in candidatas:
         ctx = db.jloads(f["contexto_ok"], {})
         if ctx.get("cargo") and ctx.get("turno") and ctx.get("uf") is True:
             elegiveis.append(f)
@@ -116,10 +130,13 @@ def avaliar(p, fontes: list) -> tuple[dict, list[str], dict]:
         melhor = None
         for dom, (ref, fref) in por_dominio.items():
             concord = [(b, f) for d, (b, f) in por_dominio.items() if iguais(ref, b)]
-            if melhor is None or len(concord) > len(melhor[1]):
-                melhor = ((ref, fref), concord)
-        (ref, fref), concord = melhor
-        if len(concord) < settings.MIN_FONTES_INDEPENDENTES:
+            chave = (len(concord), any(f["registro_encontrado"] for _, f in concord))
+            if melhor is None or chave > melhor[2]:
+                melhor = ((ref, fref), concord, chave)
+        (ref, fref), concord, _ = melhor
+        # 1 fonte basta se ela cita o número de registro; sem o número, exige 2 fontes que concordem
+        minimo = 1 if any(f["registro_encontrado"] for _, f in concord) else settings.MIN_FONTES_INDEPENDENTES
+        if len(concord) < minimo:
             motivos_tipo.append(
                 f"Votos {tipo}: só {len(concord)} fonte(s) independente(s) com os mesmos números"
             )
@@ -130,7 +147,7 @@ def avaliar(p, fontes: list) -> tuple[dict, list[str], dict]:
             for k in ("brancos_nulos", "indecisos"):
                 vals = [b.get(k) for b, _ in concord if b.get(k) is not None]
                 for v in vals:
-                    if sum(1 for w in vals if abs(w - v) <= settings.TOLERANCIA_PONTOS) >= settings.MIN_FONTES_INDEPENDENTES:
+                    if sum(1 for w in vals if abs(w - v) <= settings.TOLERANCIA_PONTOS) >= min(2, len(concord)):
                         bloco[k] = v
                         break
         s = soma(bloco)

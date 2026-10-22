@@ -152,6 +152,7 @@ def processar(p) -> int:
         blocos = extrair.extrair(texto, apelidos)
         extrair.anotar_registro(texto, blocos, rx_reg)
         ctx = extrair.contexto(texto, p["cargo"], abrangencia)
+        ctx["instituto"] = normalizar(nome_curto(p["instituto"])) in normalizar(texto)
         linhas.append(
             (
                 p["protocolo"], p["cargo"], a["url"], dominio_raiz(a["url"]), int(a["oficial"]),

@@ -58,28 +58,36 @@
 {%- endmacro %}
 
 {% macro fontes(r) -%}
-<p class="fontes"><span>Fontes dos números:</span>
+<p class="fontes"><span>Fontes ({{ r.tipo_nome|lower }}){% if r.fontes|length == 1 %} — conferido em 1 fonte que cita o registro{% endif %}:</span>
   {% for f in r.fontes %}<a href="{{ f.url }}" target="_blank" rel="nofollow noopener">{{ f.dominio }}</a>{% if not loop.last %} · {% endif %}{% endfor %}
 </p>
 {%- endmacro %}
 
 {# Card completo de uma pesquisa — todos os dados obrigatórios sempre visíveis #}
 {% macro card_pesquisa(p, nivel=3, compacto=False) -%}
-<article class="card glass card-pesquisa{% if compacto %} compacto{% endif %}" id="p-{{ p.slug }}-{{ p.cargo }}">
-  <header class="card-cab">
-    <span class="selo">{{ p.cargo_nome }} · {{ 'Nacional' if p.abrangencia == 'BR' else p.abrangencia }} · 2º turno</span>
-    <h{{ nivel }} class="card-tit"><a href="{{ p.url }}">{{ p.instituto }}</a> <span class="card-reg num">{{ p.registro }}</span></h{{ nivel }}>
+{% set r0 = p.resultados[0] if p.resultados else none %}
+<article class="card card-pesquisa{% if compacto %} compacto{% endif %}" id="p-{{ p.slug }}-{{ p.cargo }}">
+  <header class="cp-cab">
+    <h{{ nivel }} class="card-tit"><a href="{{ p.url }}">{{ p.instituto }}</a></h{{ nivel }}>
+    <p class="card-sub">{{ 'Nacional' if p.abrangencia == 'BR' else (p.abrangencia|nome_uf) }} · {{ p.data_divulgacao|data_curta }}{% if r0 %} · {{ r0.tipo_nome|lower }}{% endif %}</p>
   </header>
-  {% for r in p.resultados %}
-  <section class="resultado{% if not loop.first %} resultado-sec{% endif %}" aria-label="{{ r.tipo_nome }}">
-    <p class="tipo-res"><span class="chip">{{ r.tipo_nome }}</span></p>
-    {% for i in r.itens %}{{ barra(i.rotulo, i.valor, i.cor, i.partido, sub=not loop.first and false) }}{% endfor %}
-    {{ extras_resultado(r) }}
-    {{ fontes(r) }}
-  </section>
-  {% endfor %}
-  {{ ficha(p) }}
-  {{ acoes(p) }}
+  {% if r0 %}
+  {% for i in r0.itens %}{{ barra(i.rotulo, i.valor, i.cor, i.partido) }}{% endfor %}
+  {% if r0.tipo == 'totais' %}<p class="extras-linha">Brancos/nulos {{ r0.brancos_nulos|pct if r0.brancos_nulos is not none else 'n/i' }} · Indecisos {{ r0.indecisos|pct if r0.indecisos is not none else 'n/i' }}</p>{% endif %}
+  {% endif %}
+  <details class="mais">
+    <summary>Detalhes da pesquisa</summary>
+    {% for r in p.resultados[1:] %}
+    <section class="resultado resultado-sec" aria-label="{{ r.tipo_nome }}">
+      <p class="tipo-res"><span class="chip">{{ r.tipo_nome }}</span></p>
+      {% for i in r.itens %}{{ barra(i.rotulo, i.valor, i.cor, i.partido) }}{% endfor %}
+      {{ extras_resultado(r) }}
+    </section>
+    {% endfor %}
+    {{ ficha(p) }}
+    {% for r in p.resultados %}{{ fontes(r) }}{% endfor %}
+    {{ acoes(p) }}
+  </details>
 </article>
 {%- endmacro %}
 
@@ -100,25 +108,17 @@
 {%- endmacro %}
 
 {# Média das pesquisas registradas + lista completa das pesquisas usadas #}
-{% macro card_media(m, titulo, nivel=2, lista_aberta=True) -%}
-<section class="card glass card-media" aria-label="Média das pesquisas registradas">
-  <header class="card-cab">
+{% macro card_media(m, titulo, nivel=2, lista_aberta=False) -%}
+<section class="card card-media" aria-label="Média das pesquisas registradas">
+  <header class="cp-cab">
     <span class="selo selo-media">Média das pesquisas registradas</span>
     <h{{ nivel }} class="card-tit">{{ titulo }}</h{{ nivel }}>
-    <p class="card-sub">{{ m.tipo_nome }} · {{ m.n_pesquisas }} pesquisa{{ 's' if m.n_pesquisas != 1 }} (a mais recente de cada instituto)</p>
+    <p class="card-sub">{{ m.tipo_nome }} · {{ m.n_pesquisas }} pesquisa{{ 's' if m.n_pesquisas != 1 }}</p>
   </header>
   {% for i in m.itens %}{{ barra(i.rotulo, i.valor, i.cor, i.partido) }}{% endfor %}
-  <div class="extras">
-    {% if m.tipo == 'validos' %}
-      <span>Brancos/nulos e indecisos <strong>excluídos (votos válidos)</strong></span>
-    {% else %}
-      <span>Brancos/nulos <strong class="num">{{ m.brancos_nulos|pct if m.brancos_nulos is not none else 'não informado' }}</strong></span>
-      <span>Indecisos <strong class="num">{{ m.indecisos|pct if m.indecisos is not none else 'não informado' }}</strong></span>
-    {% endif %}
-  </div>
-  <p class="nota">Média simples da pesquisa mais recente de cada instituto. Não é previsão de resultado. <a href="/metodologia">Como calculamos</a></p>
-  <details class="usadas"{% if lista_aberta %} open{% endif %}>
-    <summary>Pesquisas usadas no cálculo ({{ m.n_pesquisas }})</summary>
+  <p class="nota">Não é previsão de resultado. <a href="/metodologia">Como calculamos</a></p>
+  <details class="mais usadas"{% if lista_aberta %} open{% endif %}>
+    <summary>Ver as {{ m.n_pesquisas }} pesquisa{{ 's' if m.n_pesquisas != 1 }} usada{{ 's' if m.n_pesquisas != 1 }}</summary>
     <div class="usadas-lista">
       {% for p in m.pesquisas %}{{ card_pesquisa(p, nivel=nivel+1, compacto=True) }}{% endfor %}
     </div>
@@ -188,7 +188,6 @@
       {% if EM_APURACAO %}<span class="leg leg-tse">Resultados: TSE</span>{% endif %}
       <span class="leg"><i style="--c:{{ mapa.paleta[0] }}"></i>1º na urna à frente</span>
       <span class="leg"><i style="--c:{{ mapa.paleta[1] }}"></i>2º na urna à frente</span>
-      <span class="leg leg-pres"{% if cargo != 'presidente' %} hidden{% endif %}><i class="nacional" style="--c:{{ mapa.paleta[1] }}"></i>Tom claro: média nacional (estado sem pesquisa estadual)</span>
       <span class="leg"><i class="sem-dados"></i>Sem pesquisas registradas</span>
       <span class="leg leg-gov"{% if cargo != 'governador' %} hidden{% endif %}><i class="sem2t"></i>Sem 2º turno</span>
     </div>
@@ -199,18 +198,26 @@
       <svg class="mapa-2d" id="mapa2d" viewBox="0 0 1000 1000" role="img" aria-label="Mapa do Brasil: {{ cargo }} por estado">
         {% for e in dados_cargo.estados %}
         <a href="{{ e.url }}" class="uf uf-{{ e.status }}{% if uf_sel == e.uf %} ativo{% endif %}" data-uf="{{ e.uf }}"
-           aria-label="{{ e.nome }}: {% if e.status == 'sem_pesquisas' %}sem pesquisas registradas{% elif e.status == 'sem_2_turno' %}sem 2º turno{% elif e.status == 'nacional' %}sem pesquisa estadual, mostra a média nacional{% else %}ver pesquisas{% endif %}">
+           aria-label="{{ e.nome }}: {% if e.status == 'sem_pesquisas' %}sem pesquisas registradas{% elif e.status == 'sem_2_turno' %}sem 2º turno{% else %}ver pesquisas{% endif %}">
           <title>{{ e.nome }}</title>
           <path d="{{ caminhos[e.uf] }}" style="--c:{{ e.cor }};--i:{{ e.intensidade }}"/>
         </a>
         {% endfor %}
         {% set centros = mapa_centros() %}
+        {% set pequenos = ['RN', 'PB', 'PE', 'AL', 'SE', 'ES', 'RJ', 'DF', 'SC'] %}
+        {% set ajuste = {'RN': (928, 282), 'PB': (944, 320), 'PE': (872, 352), 'AL': (948, 384), 'SE': (926, 410), 'ES': (848, 640), 'DF': (680, 530), 'RJ': (772, 702), 'GO': (598, 562)} %}
         {% for c in ['presidente', 'governador'] %}
         <g class="rotulos" data-cargo="{{ c }}"{% if c != cargo %} hidden{% endif %} aria-hidden="true">
-          {% for e in mapa[c].estados %}{% if e.pct_lider is defined and e.pct_lider is not none and e.status != 'nacional' and e.uf in centros %}
-          <g class="rotulo" transform="translate({{ '%.0f'|format(centros[e.uf][0]) }},{{ '%.0f'|format(centros[e.uf][1]) }})">
-            <text class="rotulo-uf" y="-10">{{ e.uf }}</text>
-            <text class="rotulo-pct" y="22">{{ e.pct_lider|pct(0) }}</text>
+          {% for e in mapa[c].estados %}{% if e.uf in centros %}
+          {% set xy = ajuste.get(e.uf, centros[e.uf]) %}
+          {% set tem = e.pct_lider is defined and e.pct_lider is not none %}
+          <g class="rotulo{% if tem %} com-dado{% endif %}" transform="translate({{ '%.0f'|format(xy[0]) }},{{ '%.0f'|format(xy[1]) }})">
+            {% if e.uf in pequenos %}
+            <text class="rotulo-linha" y="5"><tspan class="rotulo-uf">{{ e.uf }}</tspan>{% if tem %} <tspan class="rotulo-pct">{{ e.pct_lider|pct(0) }}</tspan>{% endif %}</text>
+            {% else %}
+            <text class="rotulo-uf" y="{{ -9 if tem else 6 }}">{{ e.uf }}</text>
+            {% if tem %}<text class="rotulo-pct" y="21">{{ e.pct_lider|pct(0) }}</text>{% endif %}
+            {% endif %}
           </g>
           {% endif %}{% endfor %}
         </g>
@@ -245,6 +252,7 @@
 
 {# Tabela HTML com os dados de cada estado (SEO + acessibilidade; o mapa nunca é o único lugar) #}
 {% macro tabela_estados(mapa_cargo, cargo, ufs2t) -%}
+<details class="mais tabela-det"><summary>Ver tabela por estado</summary>
 <div class="tabela-wrap glass">
 <table class="tabela-estados">
   <caption>{{ 'Presidente' if cargo == 'presidente' else 'Governador' }} — média das pesquisas registradas por estado (2º turno)</caption>
@@ -254,7 +262,7 @@
     {% set m = media_de(cargo, e.uf) if e.status not in ('sem_2_turno',) else none %}
     <tr class="linha-{{ e.status }}">
       <th scope="row"><a href="{{ e.url }}">{{ e.nome }} <span class="num">({{ e.uf }})</span></a></th>
-      <td>{% if e.status == 'sem_2_turno' %}Sem 2º turno{% elif e.status == 'apuracao' %}Apuração (TSE){% elif e.status == 'nacional' %}Sem pesquisa estadual — o mapa mostra a média nacional{% elif m %}{{ m.n_pesquisas }} pesquisa{{ 's' if m.n_pesquisas != 1 }}{% else %}Sem pesquisas registradas{% endif %}</td>
+      <td>{% if e.status == 'sem_2_turno' %}Sem 2º turno{% elif e.status == 'apuracao' %}Apuração (TSE){% elif m %}{{ m.n_pesquisas }} pesquisa{{ 's' if m.n_pesquisas != 1 }}{% else %}Sem pesquisas registradas{% endif %}</td>
       <td>{% if m %}{% for i in m.itens %}<span class="tab-cand"><i class="ponto" style="--c:{{ i.cor }}"></i>{{ i.rotulo|nome_proprio }} <strong class="num">{{ i.valor|pct }}</strong></span>{% endfor %}<small>{{ m.tipo_nome }}</small>{% else %}—{% endif %}</td>
       <td>{% if m %}<details><summary>Ver dados das {{ m.n_pesquisas }} pesquisa{{ 's' if m.n_pesquisas != 1 }}</summary><ul class="mini-lista">{% for p in m.pesquisas %}{{ mini_ficha(p) }}{% endfor %}</ul></details>{% else %}—{% endif %}</td>
     </tr>
@@ -262,13 +270,14 @@
   </tbody>
 </table>
 </div>
+</details>
 {%- endmacro %}
 
 {% macro faq_bloco(faq, pular_primeira=False) -%}
 <section class="faq" aria-labelledby="faq-tit">
   <h2 id="faq-tit">Perguntas frequentes</h2>
   {% for q, a in faq %}{% if not (pular_primeira and loop.first) %}
-  <details class="faq-item glass"{% if loop.index <= 1 %} open{% endif %}>
+  <details class="faq-item glass">
     <summary><h3>{{ q }}</h3></summary>
     <p>{{ a }}</p>
   </details>

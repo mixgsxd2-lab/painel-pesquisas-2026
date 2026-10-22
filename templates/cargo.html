@@ -6,7 +6,7 @@
   <div class="hero-txt">
     {{ ui.migalhas(seo.migalhas) }}
     <h1>Pesquisas para {{ cargo_nome }} no 2º turno de 2026 registradas no TSE</h1>
-    <p class="lead">{% if cargo == 'presidente' %}Média das pesquisas nacionais registradas, mapa com as pesquisas estaduais e a lista completa com todos os dados de cada registro.{% else %}Estados com 2º turno para governador, média das pesquisas registradas em cada um e todos os dados de cada registro.{% endif %}</p>
+    
     {{ ui.atualizado(seo.modificado) }}
   </div>
   <div class="hero-lado">{{ ui.contagem_regressiva('glass') }}</div>
@@ -20,7 +20,6 @@
   {% if apur %}
     {{ ui.card_apuracao(apur, 'Presidente — Brasil', nivel=3) }}
   {% endif %}
-  {% if faq %}<p class="resposta">{{ faq[0][1] }}</p>{% endif %}
   {% if media %}{{ ui.card_media(media, 'Presidente — Brasil (pesquisas nacionais)', nivel=3) }}{% endif %}
 </section>
 

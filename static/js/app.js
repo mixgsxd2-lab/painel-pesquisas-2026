@@ -184,6 +184,10 @@
     });
   }
 
+  if (corpo) corpo.addEventListener("click", function (ev) {
+    var b = ev.target.closest("[data-abrir]");
+    if (b) abrir(b.dataset.abrir);
+  });
   var nacional = $(".mapa-nacional");
   if (nacional) nacional.addEventListener("click", function () { abrir("BR"); });
 
@@ -198,8 +202,6 @@
       $$("a[role=tab]", pilula).forEach(function (x) { x.setAttribute("aria-selected", x === t ? "true" : "false"); });
       var leg = $(".leg-gov");
       if (leg) leg.hidden = cargo !== "governador";
-      var legp = $(".leg-pres");
-      if (legp) legp.hidden = cargo !== "presidente";
       $$("[data-painel]").forEach(function (p) {
         p.hidden = p.dataset.painel !== cargo;
         if (!p.hidden) prepararBarras(p);

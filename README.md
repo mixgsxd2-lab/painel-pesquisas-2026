@@ -32,8 +32,8 @@ no máximo a cada `INTERVALO_APURACAO_MIN` (padrão 2 min). Código: `core/gatil
 | SEO | `pipeline/sitemap.py`, `pipeline/og_images.py` | Regera `sitemap.xml` com `<lastmod>` e as imagens 1200×630 de cada página. |
 
 ### Regras de validação (todas obrigatórias)
-1. o número de registro aparece na página da fonte;
-2. ≥ 2 fontes independentes (domínios diferentes) com os mesmos números (tolerância 0,5 ponto) — brancos/nulos e indecisos também só aparecem se 2 fontes concordarem;
+1. a fonte cita o número de registro — então 1 fonte basta (o card mostra “conferido em 1 fonte”);
+2. sem o registro na página, a fonte só vale se o instituto tem uma única pesquisa daquela disputa e a página cita o instituto; aí são exigidas 2 fontes independentes com os mesmos números (tolerância 0,5 ponto). Brancos/nulos e indecisos precisam concordar entre as fontes usadas;
 3. cargo, UF e turno da página batem com o registro do TSE;
 4. nomes dos candidatos batem com os do 2º turno;
 5. soma entre 85% e 101%;

@@ -1,6 +1,6 @@
 {% import "macros.html" as ui with context %}
 <header class="gaveta-cab">
-  <p class="selo">{{ cargo_nome|capitalize }} · 2º turno</p>
+  <p class="selo">{{ cargo_nome|capitalize }}</p>
   <h2 id="gaveta-tit">{{ uf|nome_uf }}{% if uf != 'BR' %} <span class="num">({{ uf }})</span>{% else %} — pesquisas nacionais{% endif %}</h2>
   <a class="btn btn-texto" href="{{ '/presidente' if uf == 'BR' else '/' ~ cargo ~ '/' ~ (uf|lower) }}">Abrir página completa →</a>
 </header>
@@ -10,15 +10,9 @@
 {% else %}
   {% if apur %}{{ ui.card_apuracao(apur, 'Resultado oficial — ' ~ (uf|nome_uf), nivel=3) }}{% endif %}
   {% if media %}
-    {{ ui.card_media(media, (cargo_nome|capitalize) ~ ' — ' ~ (uf|nome_uf), nivel=3, lista_aberta=True) }}
+    {{ ui.card_media(media, (cargo_nome|capitalize) ~ ' — ' ~ (uf|nome_uf), nivel=3) }}
   {% else %}
-    {% if media_nacional %}
-    <div class="vazio glass aviso-nacional"><p><strong>Não há pesquisa estadual registrada</strong> no TSE para presidente {{ uf|no_uf }} no 2º turno.</p>
-    <p class="nota">Por isso o mapa mostra {{ uf|no_uf }} com a <strong>média nacional</strong>, abaixo. Não é um resultado específico do estado.</p></div>
-    {{ ui.card_media(media_nacional, 'Presidente — média nacional', nivel=3, lista_aberta=False) }}
-    {% else %}
-    <div class="vazio glass"><p><strong>Sem pesquisas registradas</strong> publicadas para {{ cargo_nome }} {{ uf|no_uf }}.</p></div>
-    {% endif %}
+    <p class="vazio-simples">Sem pesquisas registradas{% if cargo == 'presidente' %} no estado. <button type="button" class="link-btn" data-abrir="BR">Ver média nacional</button>{% endif %}</p>
   {% endif %}
 {% endif %}
 {{ ui.slot('gaveta_mapa') }}
