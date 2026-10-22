@@ -179,42 +179,44 @@
 <section class="mapa-sec" aria-label="Mapa do Brasil por estado">
   <div class="mapa-barra">
     {% if alternador %}
-    <div class="pilula glass" role="tablist" aria-label="Escolha o cargo" data-modo="{{ modo_alternador }}">
+    <div class="pilula" role="tablist" aria-label="Escolha o cargo" data-modo="{{ modo_alternador }}">
       <a role="tab" href="/presidente" data-cargo="presidente" aria-selected="{{ 'true' if cargo == 'presidente' else 'false' }}">Presidente</a>
       <a role="tab" href="/governador" data-cargo="governador" aria-selected="{{ 'true' if cargo == 'governador' else 'false' }}">Governador</a>
-      <span class="pilula-ind" aria-hidden="true"></span>
     </div>
     {% endif %}
     <div class="legenda" id="legenda">
       {% if EM_APURACAO %}<span class="leg leg-tse">Resultados: TSE</span>{% endif %}
-      <span class="leg"><i style="--c:{{ mapa.paleta[0] }}"></i>1º na urna</span>
-      <span class="leg"><i style="--c:{{ mapa.paleta[1] }}"></i>2º na urna</span>
+      <span class="leg"><i style="--c:{{ mapa.paleta[0] }}"></i>1º na urna à frente</span>
+      <span class="leg"><i style="--c:{{ mapa.paleta[1] }}"></i>2º na urna à frente</span>
       <span class="leg"><i class="sem-dados"></i>Sem pesquisas registradas</span>
       <span class="leg leg-gov"{% if cargo != 'governador' %} hidden{% endif %}><i class="sem2t"></i>Sem 2º turno</span>
     </div>
   </div>
-  <div class="mapa-palco" id="mapa" data-cargo="{{ cargo }}" data-uf="{{ uf_sel or '' }}" data-apuracao="{{ 'sim' if EM_APURACAO else 'nao' }}">
-    {% if caminhos %}
-    <svg class="mapa-2d" id="mapa2d" viewBox="0 0 1000 1000" role="img" aria-label="Mapa do Brasil: {{ 'presidente' if cargo == 'presidente' else 'governador' }} por estado">
-      <defs>
-        <filter id="brilho2d" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="6"/></filter>
-      </defs>
-      {% for e in dados_cargo.estados %}
-      <a href="{{ e.url }}" class="uf uf-{{ e.status }}{% if uf_sel == e.uf %} ativo{% endif %}" data-uf="{{ e.uf }}"
-         aria-label="{{ e.nome }}: {% if e.status == 'sem_pesquisas' %}sem pesquisas registradas{% elif e.status == 'sem_2_turno' %}sem 2º turno{% else %}ver pesquisas{% endif %}">
-        <path d="{{ caminhos[e.uf] }}" style="--c:{{ e.cor }};--i:{{ e.intensidade }}"/>
-      </a>
-      {% endfor %}
-    </svg>
-    {% else %}
-    <p class="mapa-indisp">Mapa indisponível no momento — veja a tabela abaixo.</p>
-    {% endif %}
-    <div class="mapa-3d-host" id="mapa3d" aria-hidden="true"></div>
-    <p class="mapa-dica" id="mapa-dica">Toque em um estado para ver a média e as pesquisas</p>
-  </div>
-  <div class="gaveta glass" id="gaveta" role="dialog" aria-modal="false" aria-labelledby="gaveta-tit" hidden>
-    <button class="gaveta-alca" id="gaveta-fechar" type="button" aria-label="Fechar"><span></span></button>
-    <div class="gaveta-corpo" id="gaveta-corpo" tabindex="-1"></div>
+  <div class="mapa-grade">
+    <div class="mapa-palco" id="mapa" data-cargo="{{ cargo }}" data-uf="{{ uf_sel or '' }}">
+      {% if caminhos %}
+      <svg class="mapa-2d" id="mapa2d" viewBox="0 0 1000 1000" role="img" aria-label="Mapa do Brasil: {{ cargo }} por estado">
+        {% for e in dados_cargo.estados %}
+        <a href="{{ e.url }}" class="uf uf-{{ e.status }}{% if uf_sel == e.uf %} ativo{% endif %}" data-uf="{{ e.uf }}"
+           aria-label="{{ e.nome }}: {% if e.status == 'sem_pesquisas' %}sem pesquisas registradas{% elif e.status == 'sem_2_turno' %}sem 2º turno{% else %}ver pesquisas{% endif %}">
+          <title>{{ e.nome }}</title>
+          <path d="{{ caminhos[e.uf] }}" style="--c:{{ e.cor }};--i:{{ e.intensidade }}"/>
+        </a>
+        {% endfor %}
+      </svg>
+      {% else %}
+      <p class="mapa-indisp">Mapa indisponível no momento — veja a tabela abaixo.</p>
+      {% endif %}
+    </div>
+    <div class="gaveta" id="gaveta" role="region" aria-live="polite" aria-label="Detalhes do estado">
+      <button class="gaveta-alca" id="gaveta-fechar" type="button" aria-label="Fechar"><span></span></button>
+      <div class="gaveta-corpo" id="gaveta-corpo" tabindex="-1">
+        <div class="gaveta-inicio">
+          <p class="gaveta-inicio-tit">Escolha um estado no mapa</p>
+          <p>Você vê a média das pesquisas registradas no TSE e, logo abaixo, todos os dados de cada pesquisa usada.</p>
+        </div>
+      </div>
+    </div>
   </div>
   <script type="application/json" id="dados-mapa">{{ mapa|tojson }}</script>
 </section>

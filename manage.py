@@ -33,10 +33,19 @@ def main() -> None:
     if cmd == "init":
         print("Banco pronto em", __import__("settings").DB_PATH)
     elif cmd == "pipeline":
+        import time
+
+        from core import gatilho
         from pipeline.run import configurar_log, rodada
 
         configurar_log()
-        print(rodada())
+        # ocupa a mesma reserva usada pelas visitas, para não rodar duas atualizações juntas
+        db.set_meta("reserva:pipeline", repr(time.time() + 3600))
+        db.set_meta("inicio:pipeline", repr(time.time()))
+        try:
+            print(rodada())
+        finally:
+            gatilho.liberar("pipeline")
     elif cmd == "servir":
         from app import app
 

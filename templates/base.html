@@ -45,7 +45,7 @@
 </head>
 <body class="{% block body_class %}{% endblock %}{% if EM_APURACAO %} modo-apuracao{% endif %}">
 <a class="pular" href="#conteudo">Pular para o conteúdo</a>
-<div class="fundo" aria-hidden="true"><div class="mesh"><i></i><i></i><i></i></div><div class="grao"></div></div>
+<div class="fundo" aria-hidden="true"></div>
 {% if DEMO %}<div class="faixa-demo" role="alert"><strong>DEMONSTRAÇÃO</strong> — todos os nomes, institutos e números desta versão são FICTÍCIOS e servem apenas para visualizar o design.</div>{% endif %}
 
 <header class="topo">
@@ -97,7 +97,6 @@
   <p>Este site apenas reproduz pesquisas registradas na Justiça Eleitoral. Não realiza pesquisas próprias. Médias são cálculos simples sobre pesquisas registradas e não são previsão de resultado.</p>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
 <script src="{{ static_v('js/app.js') }}" defer></script>
 {% block scripts %}{% endblock %}
 </body>

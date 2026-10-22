@@ -5,8 +5,8 @@ Agregador automático de **pesquisas eleitorais registradas no TSE** para o **2�
 valida, publica, gera sitemap e imagens de compartilhamento, e às 17h de 25/10 troca o mapa para
 o modo **Apuração** com os resultados oficiais do TSE.
 
-> **Antes de publicar, leia a seção [“O que você PRECISA configurar”](#o-que-você-precisa-configurar).**
-> Sem uma chave de API de busca, nenhuma pesquisa nova é publicada.
+> A busca dos números usa, por padrão, o **feed RSS gratuito do Bing Notícias** (sem chave).
+> Chaves de API de busca são opcionais e aumentam a cobertura — veja [“Configuração”](#o-que-você-precisa-configurar).
 
 ---
 
@@ -26,7 +26,7 @@ no máximo a cada `INTERVALO_APURACAO_MIN` (padrão 2 min). Código: `core/gatil
 | Malha | `pipeline/malha_ibge.py` | Baixa o GeoJSON das 27 UFs da API de malhas do IBGE (semanal). |
 | Candidatos | `pipeline/coletar_candidatos.py` | Lê os resultados oficiais do 1º turno no TSE e descobre quem foi ao 2º turno (presidente e cada estado) e a **ordem na urna** do 2º turno. Nada é digitado à mão. |
 | 1. Coleta TSE | `pipeline/coletar_tse.py` | Baixa os ZIPs de pesquisas, contratantes e pagantes do Portal de Dados Abertos do TSE. Filtra Presidente/Governador com coleta iniciada após o 1º turno. Extrai margem de erro, nível de confiança e abrangência do plano amostral (a base do TSE não tem essas colunas). Pesquisas que somem da base do TSE são ocultadas. |
-| 2. Busca | `pipeline/buscar_resultados.py` | Busca “instituto + registro” na web, prioriza o site oficial do instituto, lê páginas e PDFs (respeitando robots.txt) e extrai candidatos, brancos/nulos, indecisos e tipo (totais/válidos). |
+| 2. Busca | `pipeline/buscar_resultados.py` | Busca “instituto + registro” em notícias (Bing Notícias RSS, gratuito) e, se configuradas, em APIs de busca; prioriza o site oficial do instituto e as matérias mais relevantes, lê páginas e PDFs (respeitando robots.txt) e extrai candidatos, brancos/nulos, indecisos e tipo (totais/válidos). Em páginas que citam várias pesquisas, usa os números mais próximos do registro. |
 | 3. Validação | `pipeline/validar.py` | Publica só se passar em **todas** as regras (abaixo). Se falhar: `DESCARTADA`, invisível, motivo no log, nova tentativa na próxima rodada. |
 | Apuração | `pipeline/apuracao.py` | A partir de 25/10 17h (Brasília), lê os resultados do 2º turno em resultados.tse.jus.br a cada 2 minutos. |
 | SEO | `pipeline/sitemap.py`, `pipeline/og_images.py` | Regera `sitemap.xml` com `<lastmod>` e as imagens 1200×630 de cada página. |
@@ -67,8 +67,7 @@ painel-pesquisas-2026/
 ├── static/
 │   ├── css/critical.css   # CSS crítico (vai inline no <head>)
 │   ├── css/site.css       # restante do CSS (carregado sem bloquear)
-│   ├── js/app.js          # interface: contagem, barras, gaveta, alternador, presença
-│   ├── js/mapa3d.js       # mapa 3D (Three.js + GSAP), carregado só depois do conteúdo
+│   ├── js/app.js          # interface: mapa 2D, painel do estado, contagem, barras, alternador, presença
 │   ├── anuncios/          # coloque aqui as imagens dos anúncios (.webp)
 │   └── img/favicon.svg
 ├── tests/test_regras.py   # testes das regras críticas
@@ -115,16 +114,15 @@ python -m unittest discover -s tests -v
 
 ## O que você PRECISA configurar
 
-1. **Chave de API de busca (obrigatório para publicar pesquisas novas).**
-   O fallback gratuito (DuckDuckGo) responde com verificação anti-robô para servidores, e o sistema
-   **não** tenta contornar isso. Configure pelo menos um:
-   - `BRAVE_API_KEY` — [Brave Search API](https://brave.com/search/api/) (recomendado; tem plano gratuito com limite mensal);
+1. **Busca (já funciona sem chave).** O padrão é o feed RSS público do **Bing Notícias** (`BUSCA_BING_NOTICIAS=1`).
+   Para aumentar a cobertura, configure também (opcional):
+   - `BRAVE_API_KEY` — [Brave Search API](https://brave.com/search/api/) (tem plano gratuito);
    - `SERPAPI_KEY` — [SerpAPI](https://serpapi.com/) (Google);
    - `GOOGLE_CSE_KEY` + `GOOGLE_CSE_CX` — Google Programmable Search.
 
-   **Custo/limite:** cada pesquisa consome ~4 consultas por tentativa. Com `MAX_PESQUISAS_POR_RODADA=40`
-   e 24 rodadas/dia, são até ~3.800 consultas/dia na fase de maior volume. Ajuste `MAX_PESQUISAS_POR_RODADA`
-   ao seu plano (as pesquisas entram em rodízio, as nunca tentadas primeiro).
+   O DuckDuckGo vem desligado (`BUSCA_DUCKDUCKGO=0`) porque bloqueia servidores; o sistema nunca tenta
+   contornar verificações anti-robô. Cada pesquisa usa ~3 consultas por tentativa; ajuste
+   `MAX_PESQUISAS_POR_RODADA` (padrão 40) se precisar reduzir o volume.
 2. `SITE_URL` (seu domínio com https), `SECRET_KEY` (aleatória), `ADMIN_PASSWORD`.
 3. E-mail: `EMAIL_CONTATO` (exibido no site), `EMAIL_DONO` (recebe os formulários) e SMTP
    (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`). Sem SMTP, os contatos ficam salvos no banco e visíveis em `/admin`.

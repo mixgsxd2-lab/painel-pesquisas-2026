@@ -55,12 +55,24 @@ def eh_oficial(url: str, instituto: str, razao: str) -> bool:
     return any(t == raiz or (len(t) >= 6 and t in raiz) for t in toks)
 
 
+def nome_curto(instituto: str) -> str:
+    """'Quaest Pesquisas, Consultoria e Projetos' -> 'Quaest' ; 'Real Time BIG Data' -> 'Real Time'."""
+    toks = [t for t in re.findall(r"[A-Za-zÀ-ÿ0-9]+", instituto)
+            if normalizar(t) not in _GENERICAS and normalizar(t) not in {"de", "da", "do", "e", "ltda", "ss", "me"}]
+    return " ".join(toks[:2]) or instituto
+
+
 def _consultas(p) -> list[str]:
     inst = p["instituto"]
+    curto = nome_curto(inst)
     reg = p["registro"]
     cargo = "presidente" if p["cargo"] == "presidente" else "governador"
     local = "" if (p["abrangencia"] in (None, "BR")) else nome_uf(p["abrangencia"])
-    qs = [f'"{reg}" {inst}', f"{inst} pesquisa {reg} 2º turno {cargo} {local}".strip(), f'"{p["protocolo"]}"']
+    qs = [
+        f'"{reg}"',
+        f"{curto} pesquisa segundo turno {cargo} {local}".strip(),
+        f"{curto} {reg}",
+    ]
     for d in dominios_oficiais(inst, p["instituto_razao"] or "")[:1]:
         qs.insert(0, f"site:{d} {reg}")
     return qs
@@ -95,9 +107,15 @@ def processar(p) -> int:
     rx_reg = regex_registro(p["protocolo"])
 
     achados = busca_web.buscar(_consultas(p), limite=settings.MAX_URLS_POR_PESQUISA * 2)
+    curto = normalizar(nome_curto(p["instituto"]))
+    local = normalizar(nome_uf(p["abrangencia"])) if p["abrangencia"] not in (None, "BR") else ""
+    nomes = [n for lst in apelidos.values() for n in lst]
     for a in achados:
         a["oficial"] = eh_oficial(a["url"], p["instituto"], p["instituto_razao"] or "")
-    achados.sort(key=lambda a: (not a["oficial"],))
+        tit = normalizar(a.get("titulo") or "")
+        a["relevancia"] = (2 * (curto in tit) + (bool(local) and local in tit)
+                           + any(n in tit for n in nomes) + ("turno" in tit))
+    achados.sort(key=lambda a: (not a["oficial"], -a["relevancia"]))
     achados = achados[: settings.MAX_URLS_POR_PESQUISA]
 
     agora = settings.agora().isoformat()
@@ -126,6 +144,7 @@ def processar(p) -> int:
     linhas = []
     for a, titulo, texto, reg_ok in paginas:
         blocos = extrair.extrair(texto, apelidos)
+        extrair.anotar_registro(texto, blocos, rx_reg)
         ctx = extrair.contexto(texto, p["cargo"], abrangencia)
         linhas.append(
             (

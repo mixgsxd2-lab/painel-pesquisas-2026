@@ -30,15 +30,11 @@ TIPOS = ("totais", "validos")
 
 
 def iguais(a: dict, b: dict, tol: float = settings.TOLERANCIA_PONTOS) -> bool:
+    """Mesmos percentuais dos candidatos (tolerância de 0,5 ponto). Brancos/nulos e indecisos têm
+    confirmação própria (só são exibidos se 2 fontes concordarem)."""
     if set(a["candidatos"]) != set(b["candidatos"]):
         return False
-    for n, v in a["candidatos"].items():
-        if abs(v - b["candidatos"][n]) > tol + 1e-9:
-            return False
-    for k in ("brancos_nulos", "indecisos"):
-        if a.get(k) is not None and b.get(k) is not None and abs(a[k] - b[k]) > tol + 1e-9:
-            return False
-    return True
+    return all(abs(v - b["candidatos"][n]) <= tol + 1e-9 for n, v in a["candidatos"].items())
 
 
 def soma(bloco: dict) -> float:
@@ -103,10 +99,14 @@ def avaliar(p, fontes: list) -> tuple[dict, list[str], dict]:
             todos = [b for b in db.jloads(f["extracao"], []) if set(b["candidatos"]) == numeros]
             if not todos:
                 continue
-            # o bloco principal (manchete) tem prioridade; se for de outro tipo, usa o 1º bloco deste tipo
-            principal = todos[0]
-            if principal.get("tipo") == tipo:
-                escolhido = principal
+            if todos[0].get("pagina_multipla"):
+                # página-resumo com várias pesquisas: usa o bloco deste tipo mais perto do registro
+                perto = [b for b in todos if b.get("tipo") == tipo and b.get("dist_reg") is not None
+                         and b["dist_reg"] <= 1500]
+                escolhido = min(perto, key=lambda b: b["dist_reg"]) if perto else None
+            elif todos[0].get("tipo") == tipo:
+                # o bloco principal (manchete) tem prioridade
+                escolhido = todos[0]
             else:
                 escolhido = next((b for b in todos[1:] if b.get("tipo") == tipo), None)
             if escolhido and f["dominio"] not in por_dominio:

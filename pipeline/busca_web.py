@@ -4,7 +4,8 @@ Provedores (usa todos os que estiverem configurados, nesta ordem):
   1. Brave Search API      (BRAVE_API_KEY)          — recomendado, tem plano gratuito
   2. SerpAPI / Google      (SERPAPI_KEY)
   3. Google Custom Search  (GOOGLE_CSE_KEY + GOOGLE_CSE_CX)
-  4. DuckDuckGo HTML       (sem chave; fallback, pode ser bloqueado)
+  4. Bing Notícias (RSS)   (GRATUITO, sem chave — ligado por padrão; ótimo para pesquisas recentes)
+  5. DuckDuckGo HTML       (sem chave; desligado por padrão — costuma bloquear servidores)
 """
 from __future__ import annotations
 
@@ -69,6 +70,31 @@ def _google_cse(q: str) -> list[dict]:
     return [{"url": i.get("link"), "titulo": i.get("title", "")} for i in r.json().get("items", [])]
 
 
+def _bing_noticias(q: str) -> list[dict]:
+    """Feed RSS público do Bing Notícias. Os links vêm como apiclick.aspx?url=<endereço real>."""
+    import time
+    import xml.etree.ElementTree as ET
+
+    time.sleep(1.0)  # educação com o serviço
+    r = http.sessao().get(
+        "https://www.bing.com/news/search",
+        params={"q": q, "format": "rss", "setlang": "pt-BR", "cc": "BR", "count": 30},
+        timeout=20,
+    )
+    r.raise_for_status()
+    out = []
+    try:
+        raiz = ET.fromstring(r.content)
+    except ET.ParseError as e:
+        raise requests.RequestException(f"RSS do Bing inválido: {e}")
+    for item in raiz.iter("item"):
+        link = (item.findtext("link") or "").strip()
+        if "apiclick.aspx" in link:
+            link = unquote(parse_qs(urlparse(link).query).get("url", [""])[0])
+        out.append({"url": link, "titulo": (item.findtext("title") or "").strip()})
+    return out
+
+
 def _duckduckgo(q: str) -> list[dict]:
     from bs4 import BeautifulSoup
 
@@ -97,6 +123,8 @@ def provedores() -> list:
         p.append(("serpapi", _serpapi))
     if settings.GOOGLE_CSE_KEY and settings.GOOGLE_CSE_CX:
         p.append(("google_cse", _google_cse))
+    if settings.BUSCA_BING_NOTICIAS:
+        p.append(("bing_noticias", _bing_noticias))
     if settings.BUSCA_DUCKDUCKGO:
         p.append(("duckduckgo", _duckduckgo))
     return p

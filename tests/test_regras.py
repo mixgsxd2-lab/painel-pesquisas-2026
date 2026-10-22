@@ -81,6 +81,8 @@ class Validacao(unittest.TestCase):
         c = {"candidatos": {"13": 44.6, "22": 46.0}, "brancos_nulos": None, "indecisos": None}
         self.assertTrue(validar.iguais(a, b))
         self.assertFalse(validar.iguais(a, c))
+        d = {"candidatos": {"13": 44.0, "22": 46.0}, "brancos_nulos": 47.0, "indecisos": None}
+        self.assertTrue(validar.iguais(a, d))  # brancos/nulos têm confirmação própria
 
     def test_soma(self):
         self.assertEqual(validar.soma({"candidatos": {"1": 46, "2": 44}, "brancos_nulos": 9, "indecisos": 1}), 100)

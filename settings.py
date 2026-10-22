@@ -92,9 +92,10 @@ BRAVE_API_KEY = _env("BRAVE_API_KEY")
 SERPAPI_KEY = _env("SERPAPI_KEY")
 GOOGLE_CSE_KEY = _env("GOOGLE_CSE_KEY")
 GOOGLE_CSE_CX = _env("GOOGLE_CSE_CX")
-BUSCA_DUCKDUCKGO = _env_bool("BUSCA_DUCKDUCKGO", True)  # fallback gratuito, sem chave
+BUSCA_BING_NOTICIAS = _env_bool("BUSCA_BING_NOTICIAS", True)  # gratuito, sem chave
+BUSCA_DUCKDUCKGO = _env_bool("BUSCA_DUCKDUCKGO", False)  # costuma bloquear servidores
 MAX_PESQUISAS_POR_RODADA = int(_env("MAX_PESQUISAS_POR_RODADA", "40"))
-MAX_URLS_POR_PESQUISA = int(_env("MAX_URLS_POR_PESQUISA", "8"))
+MAX_URLS_POR_PESQUISA = int(_env("MAX_URLS_POR_PESQUISA", "10"))
 USER_AGENT = f"PainelPesquisas2026Bot/1.0 (+{SITE_URL}/metodologia)"
 
 # --- Validação ----------------------------------------------------------------

@@ -181,6 +181,21 @@ def extrair(texto: str, apelidos: dict[str, list[str]]) -> list[dict]:
     return blocos
 
 
+_RE_QUALQUER_REGISTRO = re.compile(r"\b[a-z]{2}[\s\-]?0*\d{3,5}[\s/\-]2026\b")
+
+
+def anotar_registro(texto: str, blocos: list[dict], rx_reg) -> None:
+    """Marca em cada bloco a distância até a menção do registro e se a página cita VÁRIAS pesquisas
+    (páginas-resumo). Em páginas-resumo, a validação usa o bloco mais próximo do registro."""
+    t = normalizar(texto)
+    posicoes = [m.start() for m in rx_reg.finditer(t)] if rx_reg else []
+    distintos = {re.sub(r"[^a-z0-9]", "", m.group(0)).lstrip("0") for m in _RE_QUALQUER_REGISTRO.finditer(t)}
+    multipla = len(distintos) > 1
+    for b in blocos:
+        b["dist_reg"] = min((abs(b["pos"] - p) for p in posicoes), default=None)
+        b["pagina_multipla"] = multipla
+
+
 def contexto(texto: str, cargo: str, abrangencia: str | None) -> dict:
     """Confere se a página fala do mesmo cargo, UF e turno do registro."""
     t = normalizar(texto)
