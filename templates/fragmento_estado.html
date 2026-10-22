@@ -12,8 +12,13 @@
   {% if media %}
     {{ ui.card_media(media, (cargo_nome|capitalize) ~ ' — ' ~ (uf|nome_uf), nivel=3, lista_aberta=True) }}
   {% else %}
-    <div class="vazio glass"><p><strong>Sem pesquisas registradas</strong> publicadas para {{ cargo_nome }} {{ uf|no_uf }}.</p>
-    <p class="nota">Dados nacionais nunca são usados no lugar de dados estaduais.</p></div>
+    {% if media_nacional %}
+    <div class="vazio glass aviso-nacional"><p><strong>Não há pesquisa estadual registrada</strong> no TSE para presidente {{ uf|no_uf }} no 2º turno.</p>
+    <p class="nota">Por isso o mapa mostra {{ uf|no_uf }} com a <strong>média nacional</strong>, abaixo. Não é um resultado específico do estado.</p></div>
+    {{ ui.card_media(media_nacional, 'Presidente — média nacional', nivel=3, lista_aberta=False) }}
+    {% else %}
+    <div class="vazio glass"><p><strong>Sem pesquisas registradas</strong> publicadas para {{ cargo_nome }} {{ uf|no_uf }}.</p></div>
+    {% endif %}
   {% endif %}
 {% endif %}
 {{ ui.slot('gaveta_mapa') }}

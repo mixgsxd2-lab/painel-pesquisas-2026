@@ -28,9 +28,14 @@
     {{ ui.card_media(media, (cargo_nome|capitalize) ~ ' — ' ~ (uf|nome_uf) ~ ' (' ~ uf ~ ')', nivel=3) }}
   {% else %}
     <div class="vazio glass">
-      <p><strong>Sem pesquisas registradas</strong> publicadas para {{ cargo_nome }} {{ uf|no_uf }}. O estado aparece em cinza no mapa — dados nacionais nunca são usados no lugar de dados estaduais.</p>
+      {% if media_nacional %}
+      <p><strong>Não há pesquisa estadual registrada</strong> no TSE para presidente {{ uf|no_uf }} no 2º turno. O mapa mostra o estado com a <strong>média nacional</strong> (abaixo), que não é um resultado específico do estado.</p>
+      {% else %}
+      <p><strong>Sem pesquisas registradas</strong> publicadas para {{ cargo_nome }} {{ uf|no_uf }}.</p>
+      {% endif %}
       {% if cands %}<p>Candidatos no 2º turno, na ordem da urna: {% for c in cands %}{{ c.nome_urna|nome_proprio }} ({{ c.partido }}){% if not loop.last %} e {% endif %}{% endfor %}.</p>{% endif %}
     </div>
+    {% if media_nacional %}{{ ui.card_media(media_nacional, 'Presidente — média nacional', nivel=3, lista_aberta=False) }}{% endif %}
   {% endif %}
 </section>
 

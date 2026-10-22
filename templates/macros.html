@@ -188,6 +188,7 @@
       {% if EM_APURACAO %}<span class="leg leg-tse">Resultados: TSE</span>{% endif %}
       <span class="leg"><i style="--c:{{ mapa.paleta[0] }}"></i>1º na urna à frente</span>
       <span class="leg"><i style="--c:{{ mapa.paleta[1] }}"></i>2º na urna à frente</span>
+      <span class="leg leg-pres"{% if cargo != 'presidente' %} hidden{% endif %}><i class="nacional" style="--c:{{ mapa.paleta[1] }}"></i>Tom claro: média nacional (estado sem pesquisa estadual)</span>
       <span class="leg"><i class="sem-dados"></i>Sem pesquisas registradas</span>
       <span class="leg leg-gov"{% if cargo != 'governador' %} hidden{% endif %}><i class="sem2t"></i>Sem 2º turno</span>
     </div>
@@ -198,7 +199,7 @@
       <svg class="mapa-2d" id="mapa2d" viewBox="0 0 1000 1000" role="img" aria-label="Mapa do Brasil: {{ cargo }} por estado">
         {% for e in dados_cargo.estados %}
         <a href="{{ e.url }}" class="uf uf-{{ e.status }}{% if uf_sel == e.uf %} ativo{% endif %}" data-uf="{{ e.uf }}"
-           aria-label="{{ e.nome }}: {% if e.status == 'sem_pesquisas' %}sem pesquisas registradas{% elif e.status == 'sem_2_turno' %}sem 2º turno{% else %}ver pesquisas{% endif %}">
+           aria-label="{{ e.nome }}: {% if e.status == 'sem_pesquisas' %}sem pesquisas registradas{% elif e.status == 'sem_2_turno' %}sem 2º turno{% elif e.status == 'nacional' %}sem pesquisa estadual, mostra a média nacional{% else %}ver pesquisas{% endif %}">
           <title>{{ e.nome }}</title>
           <path d="{{ caminhos[e.uf] }}" style="--c:{{ e.cor }};--i:{{ e.intensidade }}"/>
         </a>
@@ -206,7 +207,7 @@
         {% set centros = mapa_centros() %}
         {% for c in ['presidente', 'governador'] %}
         <g class="rotulos" data-cargo="{{ c }}"{% if c != cargo %} hidden{% endif %} aria-hidden="true">
-          {% for e in mapa[c].estados %}{% if e.pct_lider is defined and e.pct_lider is not none and e.uf in centros %}
+          {% for e in mapa[c].estados %}{% if e.pct_lider is defined and e.pct_lider is not none and e.status != 'nacional' and e.uf in centros %}
           <g class="rotulo" transform="translate({{ '%.0f'|format(centros[e.uf][0]) }},{{ '%.0f'|format(centros[e.uf][1]) }})">
             <text class="rotulo-uf" y="-10">{{ e.uf }}</text>
             <text class="rotulo-pct" y="22">{{ e.pct_lider|pct(0) }}</text>
@@ -253,7 +254,7 @@
     {% set m = media_de(cargo, e.uf) if e.status not in ('sem_2_turno',) else none %}
     <tr class="linha-{{ e.status }}">
       <th scope="row"><a href="{{ e.url }}">{{ e.nome }} <span class="num">({{ e.uf }})</span></a></th>
-      <td>{% if e.status == 'sem_2_turno' %}Sem 2º turno{% elif e.status == 'apuracao' %}Apuração (TSE){% elif m %}{{ m.n_pesquisas }} pesquisa{{ 's' if m.n_pesquisas != 1 }}{% else %}Sem pesquisas registradas{% endif %}</td>
+      <td>{% if e.status == 'sem_2_turno' %}Sem 2º turno{% elif e.status == 'apuracao' %}Apuração (TSE){% elif e.status == 'nacional' %}Sem pesquisa estadual — o mapa mostra a média nacional{% elif m %}{{ m.n_pesquisas }} pesquisa{{ 's' if m.n_pesquisas != 1 }}{% else %}Sem pesquisas registradas{% endif %}</td>
       <td>{% if m %}{% for i in m.itens %}<span class="tab-cand"><i class="ponto" style="--c:{{ i.cor }}"></i>{{ i.rotulo|nome_proprio }} <strong class="num">{{ i.valor|pct }}</strong></span>{% endfor %}<small>{{ m.tipo_nome }}</small>{% else %}—{% endif %}</td>
       <td>{% if m %}<details><summary>Ver dados das {{ m.n_pesquisas }} pesquisa{{ 's' if m.n_pesquisas != 1 }}</summary><ul class="mini-lista">{% for p in m.pesquisas %}{{ mini_ficha(p) }}{% endfor %}</ul></details>{% else %}—{% endif %}</td>
     </tr>

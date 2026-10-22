@@ -279,3 +279,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--acento)}
 .mn-sub{font-size:.7rem;color:var(--txt3)}
 .mapa-palco[data-cargo=governador] .mapa-nacional{display:none}
 @media (max-width:620px){.mapa-nacional{left:8px;bottom:8px;padding:9px 11px}.mn-linha{font-size:.82rem}.mn-linha strong{font-size:.92rem}}
+
+/* estados sem pesquisa estadual de presidente: média nacional em tom claro */
+.mapa-2d .uf-nacional path{fill:color-mix(in srgb,var(--c) 26%,#1b1e29)}
+.leg i.nacional{background:color-mix(in srgb,var(--c) 26%,#1b1e29);border:1px solid var(--borda2)}
+.aviso-nacional{margin-bottom:12px}

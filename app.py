@@ -281,6 +281,7 @@ def criar_app() -> Flask:
         return render_template(
             "estado.html", seo=s, cargo=cargo, cargo_nome=nome, uf=UF, media=m, pesquisas=pesq, faq=faq,
             sem_2_turno=sem_2t, vizinhos=VIZINHOS[UF], mapa=pacote_mapa(), apur=apur,
+            media_nacional=dados.media("presidente", "BR") if (cargo == "presidente" and not m) else None,
             ufs2t=dados.ufs_2t_governador(), cands=cand_mod.listar(cargo, "BR" if cargo == "presidente" else UF),
             outro_cargo="governador" if cargo == "presidente" else "presidente",
         )
@@ -438,6 +439,7 @@ def criar_app() -> Flask:
         resp = make_response(render_template(
             "fragmento_estado.html", cargo=cargo, cargo_nome=CARGOS[cargo]["nome"].lower(), uf=UF, media=m,
             sem_2_turno=sem_2t, apur=apur,
+            media_nacional=dados.media("presidente", "BR") if (cargo == "presidente" and UF != "BR" and not m) else None,
             cands=cand_mod.listar(cargo, "BR" if cargo == "presidente" else UF),
         ))
         resp.headers["X-Robots-Tag"] = "noindex"

@@ -68,11 +68,17 @@ def _consultas(p) -> list[str]:
     reg = p["registro"]
     cargo = "presidente" if p["cargo"] == "presidente" else "governador"
     local = "" if (p["abrangencia"] in (None, "BR")) else nome_uf(p["abrangencia"])
+    uf_c = "BR" if p["cargo"] == "presidente" else p["uf_registro"]
+    nomes = " ".join(cand_mod.listar(p["cargo"], uf_c)[i]["nome_urna"].title()
+                     for i in range(min(2, len(cand_mod.listar(p["cargo"], uf_c)))))
     qs = [
         f'"{reg}"',
         f"{curto} pesquisa segundo turno {cargo} {local}".strip(),
         f"{curto} {reg}",
     ]
+    if local:  # pesquisas estaduais saem mais na imprensa local, citando os candidatos
+        qs.append(f"pesquisa {cargo} {local} {nomes} {curto}")
+        qs.append(f"{curto} {local} {nomes}")
     for d in dominios_oficiais(inst, p["instituto_razao"] or "")[:1]:
         qs.insert(0, f"site:{d} {reg}")
     return qs
