@@ -5,7 +5,7 @@ from xml.sax.saxutils import escape
 
 import settings
 from core import db
-from core.textutil import parse_datahora, registro_slug
+from core.textutil import parse_datahora
 from core.ufs import UFS
 
 ARQUIVO = settings.DATA_DIR / ("sitemap-demo.xml" if settings.DEMO else "sitemap.xml")
@@ -23,16 +23,12 @@ def gerar() -> int:
         ("/", _iso(glob), "1.0"),
         ("/presidente", _iso(db.get_meta("atualizado:presidente:BR") or glob), "0.9"),
         ("/governador", _iso(glob), "0.9"),
-        ("/pesquisas", _iso(glob), "0.9"),
-        ("/metodologia", LANCAMENTO, "0.5"),
         ("/contato", LANCAMENTO, "0.3"),
         ("/anuncie", LANCAMENTO, "0.3"),
     ]
     for uf in UFS:
         for cargo in ("presidente", "governador"):
             urls.append((f"/{cargo}/{uf.lower()}", _iso(db.get_meta(f"atualizado:{cargo}:{uf}")), "0.8"))
-    for r in db.q("SELECT DISTINCT protocolo, MAX(publicada_em) p FROM pesquisas WHERE status='PUBLICADA' GROUP BY protocolo"):
-        urls.append((f"/pesquisas/{registro_slug(r['protocolo'])}", _iso(r["p"]), "0.6"))
 
     linhas = ['<?xml version="1.0" encoding="UTF-8"?>',
               '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']

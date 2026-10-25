@@ -1,18 +1,15 @@
 {% import "macros.html" as ui with context %}
 <header class="gaveta-cab">
   <p class="selo">{{ cargo_nome|capitalize }}</p>
-  <h2 id="gaveta-tit">{{ uf|nome_uf }}{% if uf != 'BR' %} <span class="num">({{ uf }})</span>{% else %} — pesquisas nacionais{% endif %}</h2>
+  <h2 id="gaveta-tit">{{ uf|nome_uf }}{% if uf != 'BR' %} <span class="num">({{ uf }})</span>{% else %} — resultado nacional{% endif %}</h2>
   <a class="btn btn-texto" href="{{ '/presidente' if uf == 'BR' else '/' ~ cargo ~ '/' ~ (uf|lower) }}">Abrir página completa →</a>
 </header>
 {% if sem_2_turno %}
   <div class="vazio glass"><p><strong>Sem 2º turno</strong> para governador {{ uf|no_uf }}, segundo os dados oficiais do TSE.</p>
-  <p><a href="/presidente/{{ uf|lower }}">Ver pesquisas para presidente {{ uf|no_uf }} →</a></p></div>
+  <p><a href="/presidente/{{ uf|lower }}">Ver apuração para presidente {{ uf|no_uf }} →</a></p></div>
+{% elif apur %}
+  {{ ui.card_apuracao(apur, 'Resultado oficial — ' ~ (uf|nome_uf), nivel=3) }}
 {% else %}
-  {% if apur %}{{ ui.card_apuracao(apur, 'Resultado oficial — ' ~ (uf|nome_uf), nivel=3) }}{% endif %}
-  {% if media %}
-    {{ ui.card_media(media, (cargo_nome|capitalize) ~ ' — ' ~ (uf|nome_uf), nivel=3) }}
-  {% else %}
-    <p class="vazio-simples">Sem pesquisas registradas{% if cargo == 'presidente' %} no estado. <button type="button" class="link-btn" data-abrir="BR">Ver média nacional</button>{% endif %}</p>
-  {% endif %}
+  <p class="vazio-simples">Aguardando os primeiros resultados do TSE.{% if cargo == 'presidente' and uf != 'BR' %} <button type="button" class="link-btn" data-abrir="BR">Ver resultado nacional</button>{% endif %}</p>
 {% endif %}
 {{ ui.slot('gaveta_mapa') }}

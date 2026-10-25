@@ -1,5 +1,5 @@
 {# ============================================================================
-   Macros do Painel das Pesquisas 2026
+   Macros do Painel da Apuração 2026
    Regra de ouro: nenhum percentual aparece sem os dados obrigatórios da pesquisa
    no mesmo card (visíveis ou a um toque, em <details>).
    ============================================================================ #}
@@ -192,7 +192,7 @@
       {% if EM_APURACAO %}<span class="leg leg-tse">Resultados: TSE</span>{% endif %}
       <span class="leg"><i style="--c:{{ mapa.paleta[0] }}"></i>1º na urna à frente</span>
       <span class="leg"><i style="--c:{{ mapa.paleta[1] }}"></i>2º na urna à frente</span>
-      <span class="leg"><i class="sem-dados"></i>Sem pesquisas registradas</span>
+      <span class="leg"><i class="sem-dados"></i>Aguardando resultados</span>
       <span class="leg leg-gov"{% if cargo != 'governador' %} hidden{% endif %}><i class="sem2t"></i>Sem 2º turno</span>
     </div>
   </div>
@@ -202,7 +202,7 @@
       <svg class="mapa-2d" id="mapa2d" viewBox="0 0 1000 1000" role="img" aria-label="Mapa do Brasil: {{ cargo }} por estado">
         {% for e in dados_cargo.estados %}
         <a href="{{ e.url }}" class="uf uf-{{ e.status }}{% if uf_sel == e.uf %} ativo{% endif %}" data-uf="{{ e.uf }}"
-           aria-label="{{ e.nome }}: {% if e.status == 'sem_pesquisas' %}sem pesquisas registradas{% elif e.status == 'sem_2_turno' %}sem 2º turno{% else %}ver pesquisas{% endif %}">
+           aria-label="{{ e.nome }}: {% if e.status == 'sem_pesquisas' %}aguardando resultados{% elif e.status == 'sem_2_turno' %}sem 2º turno{% else %}ver apuração{% endif %}">
           <title>{{ e.nome }}</title>
           <path d="{{ caminhos[e.uf] }}" style="--c:{{ e.cor }};--i:{{ e.intensidade }}"/>
         </a>
@@ -228,12 +228,12 @@
         {% endfor %}
       </svg>
       {% if mapa.nacional %}
-      <button type="button" class="mapa-nacional" data-uf="BR" aria-label="Ver a média nacional para presidente e as pesquisas usadas">
-        <span class="mn-tit">Média nacional · presidente</span>
+      <button type="button" class="mapa-nacional" data-uf="BR" aria-label="Ver o resultado nacional da apuração para presidente">
+        <span class="mn-tit">Apuração nacional · presidente</span>
         {% for i in mapa.nacional.itens|sort(attribute='valor', reverse=True) %}
         <span class="mn-linha">{{ avatar(i.foto, i.rotulo, i.cor) }}{{ i.rotulo|nome_proprio }} <strong class="num">{{ i.valor|pct }}</strong></span>
         {% endfor %}
-        <span class="mn-sub">{{ mapa.nacional.tipo_nome }} · {{ mapa.nacional.n }} pesquisa{{ 's' if mapa.nacional.n != 1 }} · toque para ver os dados</span>
+        <span class="mn-sub">{{ mapa.nacional.pst|dec }}% das seções totalizadas · toque para ver</span>
       </button>
       {% endif %}
       {% else %}
@@ -245,7 +245,7 @@
       <div class="gaveta-corpo" id="gaveta-corpo" tabindex="-1">
         <div class="gaveta-inicio">
           <p class="gaveta-inicio-tit">Escolha um estado no mapa</p>
-          <p>Você vê a média das pesquisas registradas no TSE e, logo abaixo, todos os dados de cada pesquisa usada.</p>
+          <p>Você vê o resultado da apuração do TSE naquele estado.</p>
         </div>
       </div>
     </div>
@@ -259,22 +259,27 @@
 <details class="mais tabela-det"><summary>Ver tabela por estado</summary>
 <div class="tabela-wrap glass">
 <table class="tabela-estados">
-  <caption>{{ 'Presidente' if cargo == 'presidente' else 'Governador' }} — média das pesquisas registradas por estado (2º turno)</caption>
-  <thead><tr><th scope="col">Estado</th><th scope="col">Situação</th><th scope="col">Média das pesquisas registradas</th><th scope="col">Pesquisas usadas</th></tr></thead>
+  <caption>{{ 'Presidente' if cargo == 'presidente' else 'Governador' }} — apuração por estado (2º turno, TSE)</caption>
+  <thead><tr><th scope="col">Estado</th><th scope="col">Situação</th><th scope="col">À frente</th></tr></thead>
   <tbody>
   {% for e in mapa_cargo.estados %}
-    {% set m = media_de(cargo, e.uf) if e.status not in ('sem_2_turno',) else none %}
     <tr class="linha-{{ e.status }}">
       <th scope="row"><a href="{{ e.url }}">{{ e.nome }} <span class="num">({{ e.uf }})</span></a></th>
-      <td data-label="Situação">{% if e.status == 'sem_2_turno' %}Sem 2º turno{% elif e.status == 'apuracao' %}Apuração (TSE){% elif m %}{{ m.n_pesquisas }} pesquisa{{ 's' if m.n_pesquisas != 1 }}{% else %}Sem pesquisas registradas{% endif %}</td>
-      <td data-label="Média">{% if m %}{% for i in m.itens %}<span class="tab-cand">{{ avatar(i.foto, i.rotulo, i.cor) }}{{ i.rotulo|nome_proprio }} <strong class="num">{{ i.valor|pct }}</strong></span>{% endfor %}<small>{{ m.tipo_nome }}</small>{% else %}—{% endif %}</td>
-      <td data-label="Pesquisas">{% if m %}<details><summary>Ver dados das {{ m.n_pesquisas }} pesquisa{{ 's' if m.n_pesquisas != 1 }}</summary><ul class="mini-lista">{% for p in m.pesquisas %}{{ mini_ficha(p) }}{% endfor %}</ul></details>{% else %}—{% endif %}</td>
+      <td data-label="Situação">{% if e.status == 'sem_2_turno' %}Sem 2º turno{% elif e.status == 'apuracao' %}{{ e.pst|dec }}% das seções totalizadas{% else %}Aguardando resultados{% endif %}</td>
+      <td data-label="À frente">{% if e.status == 'apuracao' and e.lider %}{{ e.lider|nome_proprio }} <strong class="num">{{ e.pct_lider|pct }}</strong>{% else %}—{% endif %}</td>
     </tr>
   {% endfor %}
   </tbody>
 </table>
 </div>
 </details>
+{%- endmacro %}
+
+{% macro aguardando(cands) -%}
+<div class="vazio glass">
+  <p><strong>Aguardando os primeiros resultados do TSE.</strong> A apuração começa às 17h (Brasília) e os números aparecem aqui assim que o TSE divulgar.</p>
+  {% if cands %}<p>Candidatos no 2º turno, na ordem da urna: {% for c in cands %}{{ c.nome_urna|nome_proprio }} ({{ c.partido }}){% if not loop.last %} e {% endif %}{% endfor %}.</p>{% endif %}
+</div>
 {%- endmacro %}
 
 {% macro faq_bloco(faq, pular_primeira=False) -%}

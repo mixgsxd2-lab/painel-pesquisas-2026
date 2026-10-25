@@ -41,7 +41,7 @@ DB_PATH = Path(_env("DB_PATH", str(DATA_DIR / ("demo.db" if DEMO else "painel.db
 TZ = ZoneInfo("America/Sao_Paulo")
 
 # --- Site -------------------------------------------------------------------
-SITE_NOME = "Painel das Pesquisas 2026"
+SITE_NOME = "Painel da Apuração 2026"
 SITE_URL = _env("SITE_URL", "http://localhost:5000").rstrip("/")
 SECRET_KEY = _env("SECRET_KEY", "troque-esta-chave-em-producao")
 EMAIL_CONTATO = _env("EMAIL_CONTATO", "correcoes@exemplo.com.br")

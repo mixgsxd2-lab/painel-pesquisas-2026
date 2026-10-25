@@ -44,7 +44,7 @@ def _etapa(nome: str, fn, resumo: dict) -> None:
 
 
 def rodada() -> dict:
-    """Uma rodada: candidatos → TSE → busca → validação → apuração → sitemap → imagens."""
+    """Uma rodada: candidatos → apuração → sitemap → imagens (pesquisas desativadas)."""
     if settings.DEMO:
         log.info("Modo DEMO: pipeline desativado.")
         return {"demo": True}
@@ -52,8 +52,7 @@ def rodada() -> dict:
         log.info("Rodada anterior ainda em andamento; pulando.")
         return {"pulada": True}
     try:
-        from pipeline import (apuracao, buscar_resultados, coletar_candidatos, coletar_tse, malha_ibge,
-                              og_images, sitemap, validar)
+        from pipeline import apuracao, coletar_candidatos, malha_ibge, og_images, sitemap
 
         db.init_db()
         resumo: dict = {"inicio": settings.agora().isoformat()}
@@ -61,13 +60,7 @@ def rodada() -> dict:
         ultima_cand = db.get_meta("candidatos_atualizados_em")
         if not ultima_cand or settings.agora().isoformat()[:13] != ultima_cand[:13]:
             _etapa("candidatos", coletar_candidatos.coletar, resumo)
-        _etapa("coletar_tse", coletar_tse.coletar, resumo)
-        _etapa("buscar_resultados", buscar_resultados.executar, resumo)
-        _etapa("validar", validar.executar, resumo)
         _etapa("apuracao", apuracao.coletar, resumo)
-        from pipeline import semente
-
-        _etapa("semente", semente.exportar, resumo)
         _etapa("sitemap", sitemap.gerar, resumo)
         _etapa("og_images", og_images.gerar_todas, resumo)
         from core import audiencia
