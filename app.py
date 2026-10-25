@@ -385,7 +385,7 @@ def criar_app() -> Flask:
     def malha():
         if not geo.disponivel():
             abort(404)
-        r = send_file(geo.ARQUIVO, mimetype="application/geo+json", max_age=60 * 60 * 24 * 7)
+        r = send_file(geo.arquivo(), mimetype="application/geo+json", max_age=60 * 60 * 24 * 7)
         return r
 
     @app.route("/og/<nome>.png")
