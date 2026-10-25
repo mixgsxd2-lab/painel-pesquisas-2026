@@ -4,8 +4,8 @@
 {% block conteudo %}
 <section class="hero">
   <div class="hero-txt">
-    <h1>Pesquisas do 2º turno 2026 para presidente e governador registradas no TSE</h1>
-    <p class="lead">Média das pesquisas registradas no TSE, por estado.</p>
+    <h1>Apuração do 2º turno 2026 para presidente e governador</h1>
+    <p class="lead">Resultados oficiais do TSE, por estado.</p>
     {{ ui.atualizado(seo.modificado) }}
   </div>
   <div class="hero-lado">
@@ -18,20 +18,15 @@
 
 <div class="painel" data-painel="presidente">
   <section class="secao" aria-labelledby="h-pres">
-    <h2 id="h-pres">Quem lidera as pesquisas para presidente no 2º turno?</h2>
+    <h2 id="h-pres">Apuração para presidente no 2º turno</h2>
     {% if apur_br %}
       {{ ui.card_apuracao(apur_br, 'Presidente — Brasil', nivel=3) }}
-    {% elif media_br %}
-      {{ ui.card_media(media_br, 'Presidente — Brasil (pesquisas nacionais)', nivel=3, lista_aberta=False) }}
     {% else %}
-      <div class="vazio glass">
-        <p><strong>Ainda não há pesquisas nacionais publicadas.</strong> Só aparecem pesquisas registradas no TSE que passaram em todas as <a href="/metodologia">validações automáticas</a>.</p>
-        {% if cands_br %}<p>Candidatos no 2º turno, na ordem da urna: {% for c in cands_br %}{{ c.nome_urna|nome_proprio }} ({{ c.partido }}){% if not loop.last %} e {% endif %}{% endfor %}.</p>{% endif %}
-      </div>
+      {{ ui.aguardando(cands_br) }}
     {% endif %}
   </section>
   <section class="secao" aria-labelledby="h-pres-uf">
-    <h2 id="h-pres-uf">Pesquisas para presidente por estado</h2>
+    <h2 id="h-pres-uf">Apuração para presidente por estado</h2>
     {{ ui.tabela_estados(mapa.presidente, 'presidente', ufs2t) }}
   </section>
 </div>
@@ -49,6 +44,4 @@
     {{ ui.tabela_estados(mapa.governador, 'governador', ufs2t) }}
   </section>
 </div>
-
-<p class="ver-mais"><a class="btn btn-vidro" href="/pesquisas">Ver todas as pesquisas →</a></p>
 {% endblock %}

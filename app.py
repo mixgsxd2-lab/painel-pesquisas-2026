@@ -1,4 +1,4 @@
-"""Painel das Pesquisas 2026 — aplicação Flask (renderização no servidor)."""
+"""Painel da Apuração 2026 — aplicação Flask (renderização no servidor)."""
 from __future__ import annotations
 
 import hashlib
@@ -14,10 +14,9 @@ from flask import (Flask, abort, jsonify, make_response, redirect, render_templa
                    send_from_directory, session, url_for)
 
 import settings
-from core import anuncios, audiencia, dados, db, gatilho, geo, mailer, seo, textos
+from core import anuncios, audiencia, dados, db, gatilho, geo, mailer, seo
 from core import candidatos as cand_mod
-from core.textutil import (data_br, data_curta, datahora_br, dec, nome_proprio, num, pct, protocolo_de_slug,
-                           registro_slug)
+from core.textutil import data_br, data_curta, datahora_br, dec, nome_proprio, num, pct
 from core.ufs import CARGOS, UFS, VIZINHOS, no_uf, nome_uf
 
 
@@ -179,11 +178,11 @@ def criar_app() -> Flask:
         }
 
     def resumo_nacional():
-        m = dados.media("presidente", "BR")
-        if not m:
+        a = dados.apuracao("presidente", "BR") if dados.em_apuracao() else None
+        if not a or not a.get("candidatos"):
             return None
-        return {"itens": [{"rotulo": i["rotulo"], "valor": i["valor"], "cor": i["cor"], "foto": i.get("foto")} for i in m["itens"]],
-                "n": m["n_pesquisas"], "tipo_nome": m["tipo_nome"]}
+        return {"itens": [{"rotulo": c["nome"], "valor": c.get("pct") or 0, "cor": c["cor"], "foto": c.get("foto")}
+                          for c in a["candidatos"]], "pst": a.get("pst") or 0}
 
     def pacote_mapa():
         return {
@@ -202,20 +201,17 @@ def criar_app() -> Flask:
     # ------------------------------------------------------------------ páginas
     @app.route("/")
     def home():
-        m_br = dados.media("presidente", "BR")
-        pres = dados.pesquisas_publicadas(cargo="presidente", uf="BR")
         mod = dados.atualizado_em()
         s = montar_seo(
-            "Pesquisas 2º turno 2026: presidente e governadores – registradas no TSE",
-            "Todas as pesquisas eleitorais registradas no TSE para o 2º turno de 2026, com média das pesquisas "
-            "registradas, margem de erro, instituto e mapa por estado. Presidente e governadores.",
-            "/", og="home", modificado=mod, extras=[seo.website_ld(), seo.webpage_ld("Painel das Pesquisas 2026", "/", mod)],
+            "Apuração 2º turno 2026: presidente e governadores – resultados do TSE",
+            "Apuração do 2º turno de 2026 em tempo real com os resultados oficiais do TSE: presidente e "
+            "governadores, com mapa por estado.",
+            "/", og="home", modificado=mod, extras=[seo.website_ld(), seo.webpage_ld(settings.SITE_NOME, "/", mod)],
         )
         return render_template(
-            "home.html", seo=s, media_br=m_br, pesquisas_br=pres[:6], mapa=pacote_mapa(),
-            cargo_inicial="presidente", apur_br=dados.apuracao("presidente", "BR") if dados.em_apuracao() else None,
+            "home.html", seo=s, mapa=pacote_mapa(), cargo_inicial="presidente",
+            apur_br=dados.apuracao("presidente", "BR") if dados.em_apuracao() else None,
             ufs2t=dados.ufs_2t_governador(), cands_br=cand_mod.listar("presidente", "BR"),
-            contagens=dados.contagens(),
         )
 
     @app.route("/<cargo>")
@@ -224,29 +220,18 @@ def criar_app() -> Flask:
             abort(404)
         mod = dados.atualizado_em()
         nome = CARGOS[cargo]["nome"].lower()
-        if cargo == "presidente":
-            m = dados.media("presidente", "BR")
-            pesq = dados.pesquisas_publicadas(cargo="presidente", uf="BR")
-            faq = textos.faq("presidente", "BR", m, pesq)
-            titulo = "Pesquisas 2º turno presidente 2026 – todas registradas no TSE"
-            desc = (f"Veja todas as pesquisas registradas no TSE para presidente no 2º turno de 2026 "
-                    f"({candidatos_nomes('presidente', 'BR')}), com margem de erro, instituto e média.")
-        else:
-            m, pesq = None, dados.pesquisas_publicadas(cargo="governador")
-            faq = []
-            titulo = "Pesquisas 2º turno governador 2026 – todas registradas no TSE"
-            desc = ("Pesquisas registradas no TSE para governador nos estados com 2º turno em 2026, com margem de "
-                    "erro, instituto, contratante e média das pesquisas registradas por estado.")
-        extras = [seo.dataset_ld(titulo, desc, f"/{cargo}", mod, "Brasil", len(pesq))]
-        if faq:
-            extras.append(seo.faq_ld(faq))
+        apurando = dados.em_apuracao()
+        titulo = f"Apuração 2º turno {nome} 2026 – resultados do TSE"
+        desc = (f"Apuração do 2º turno para {nome} em 2026 com os resultados oficiais do TSE, "
+                f"atualizados durante a contagem dos votos.")
         s = montar_seo(titulo, desc, f"/{cargo}", og=cargo, modificado=mod,
-                       migalhas=[("Início", "/"), (CARGOS[cargo]["nome"], f"/{cargo}")], extras=extras)
+                       migalhas=[("Início", "/"), (CARGOS[cargo]["nome"], f"/{cargo}")])
+        ufs2t = dados.ufs_2t_governador()
         return render_template(
-            "cargo.html", seo=s, cargo=cargo, cargo_nome=nome, media=m, pesquisas=pesq, faq=faq,
-            mapa=pacote_mapa(), ufs2t=dados.ufs_2t_governador(),
-            apur=dados.apuracao(cargo, "BR") if (dados.em_apuracao() and cargo == "presidente") else None,
-            medias_uf={uf: dados.media(cargo, uf) for uf in UFS},
+            "cargo.html", seo=s, cargo=cargo, cargo_nome=nome, mapa=pacote_mapa(), ufs2t=ufs2t,
+            apur=dados.apuracao(cargo, "BR") if (apurando and cargo == "presidente") else None,
+            apur_uf={uf: dados.apuracao(cargo, uf) for uf in ufs2t} if (apurando and cargo == "governador") else {},
+            cands=cand_mod.listar("presidente", "BR") if cargo == "presidente" else [],
         )
 
     @app.route("/<cargo>/<uf>")
@@ -260,109 +245,34 @@ def criar_app() -> Flask:
             abort(404)
         nome = CARGOS[cargo]["nome"].lower()
         sem_2t = cargo == "governador" and UF not in dados.ufs_2t_governador()
-        m = None if sem_2t else dados.media(cargo, UF)
-        pesq = [] if sem_2t else dados.pesquisas_publicadas(cargo=cargo, uf=UF)
-        faq = textos.faq(nome, UF, m, pesq, sem_2_turno=sem_2t)
         mod = dados.atualizado_em(cargo, UF)
-        titulo = f"Pesquisas 2º turno {nome} {UF} 2026 – todas registradas no TSE"
+        titulo = f"Apuração 2º turno {nome} {UF} 2026 – resultados do TSE"
         if sem_2t:
-            desc = (f"Governador {no_uf(UF)} em 2026: não consta 2º turno nos dados oficiais do TSE. Veja as "
-                    f"pesquisas registradas para presidente {no_uf(UF)} e nos estados vizinhos.")
+            desc = (f"Governador {no_uf(UF)} em 2026: não consta 2º turno nos dados oficiais do TSE. Veja a "
+                    f"apuração para presidente {no_uf(UF)}.")
         else:
-            desc = (f"Veja todas as pesquisas registradas no TSE para {nome} {no_uf(UF)} no 2º turno, "
-                    f"com margem de erro, instituto e média.")
+            desc = f"Apuração do 2º turno para {nome} {no_uf(UF)} com os resultados oficiais do TSE."
         migalhas = [("Início", "/"), (CARGOS[cargo]["nome"], f"/{cargo}"), (nome_uf(UF), f"/{cargo}/{uf}")]
-        extras = [seo.faq_ld(faq)]
-        if pesq:
-            extras.append(seo.dataset_ld(titulo, desc, f"/{cargo}/{uf}", mod, nome_uf(UF), len(pesq)))
-        s = montar_seo(titulo, desc, f"/{cargo}/{uf}", og=f"{cargo}-{uf}", modificado=mod,
-                       migalhas=migalhas, extras=extras)
+        s = montar_seo(titulo, desc, f"/{cargo}/{uf}", og=f"{cargo}-{uf}", modificado=mod, migalhas=migalhas)
         apur = dados.apuracao(cargo, UF) if dados.em_apuracao() and not sem_2t else None
         return render_template(
-            "estado.html", seo=s, cargo=cargo, cargo_nome=nome, uf=UF, media=m, pesquisas=pesq, faq=faq,
+            "estado.html", seo=s, cargo=cargo, cargo_nome=nome, uf=UF,
             sem_2_turno=sem_2t, vizinhos=VIZINHOS[UF], mapa=pacote_mapa(), apur=apur,
             ufs2t=dados.ufs_2t_governador(), cands=cand_mod.listar(cargo, "BR" if cargo == "presidente" else UF),
             outro_cargo="governador" if cargo == "presidente" else "presidente",
         )
 
+    # páginas de pesquisas foram retiradas: o site mostra só a apuração
     @app.route("/pesquisas")
-    def pagina_pesquisas():
-        f_cargo = request.args.get("cargo") if request.args.get("cargo") in CARGOS else None
-        f_uf = (request.args.get("uf") or "").upper()
-        f_uf = f_uf if (f_uf in UFS or f_uf == "BR") else None
-        f_inst = request.args.get("instituto") or None
-        f_de = request.args.get("de") if re.fullmatch(r"\d{4}-\d{2}-\d{2}", request.args.get("de") or "") else None
-        f_ate = request.args.get("ate") if re.fullmatch(r"\d{4}-\d{2}-\d{2}", request.args.get("ate") or "") else None
-        lista = dados.pesquisas_publicadas(cargo=f_cargo, uf=f_uf, instituto=f_inst, de=f_de, ate=f_ate)
-        try:
-            pagina = max(1, int(request.args.get("p", "1")))
-        except ValueError:
-            pagina = 1
-        por_pagina = 20
-        total = len(lista)
-        paginas = max(1, (total + por_pagina - 1) // por_pagina)
-        itens = lista[(pagina - 1) * por_pagina: pagina * por_pagina]
-        filtrado = any([f_cargo, f_uf, f_inst, f_de, f_ate]) or pagina > 1
-        mod = dados.atualizado_em()
-        titulo = "Pesquisas 2º turno 2026 registradas no TSE – lista completa e fontes"
-        desc = ("Lista de todas as pesquisas eleitorais registradas no TSE para o 2º turno de 2026: instituto, "
-                "contratante, registro, período, entrevistas, margem de erro, confiança e fontes.")
-        s = montar_seo(
-            titulo, desc, "/pesquisas", og="pesquisas", modificado=mod,
-            migalhas=[("Início", "/"), ("Pesquisas", "/pesquisas")],
-            extras=[seo.dataset_ld(titulo, desc, "/pesquisas", mod, "Brasil", total)],
-            robots="noindex, follow" if filtrado else None,
-        )
-        args_base = {k: v for k, v in request.args.items() if k != "p" and v}
-        return render_template(
-            "pesquisas.html", seo=s, pesquisas=itens, total=total, pagina=pagina, paginas=paginas,
-            filtros={"cargo": f_cargo, "uf": f_uf, "instituto": f_inst, "de": f_de, "ate": f_ate},
-            institutos=dados.institutos_publicados(), args_base=args_base,
-            registradas=dados.pesquisas_registradas(cargo=f_cargo, uf=f_uf, instituto=f_inst, de=f_de, ate=f_ate),
-            total_tse=db.q1("SELECT COUNT(*) n FROM pesquisas WHERE status != 'SEM_REGISTRO'")["n"],
-        )
-
-    @app.route("/pesquisas/<slug>")
-    def pagina_pesquisa(slug):
-        protocolo = protocolo_de_slug(slug)
-        if not protocolo:
-            abort(404)
-        if slug != registro_slug(protocolo):
-            return redirect(f"/pesquisas/{registro_slug(protocolo)}", 301)
-        linhas = dados.pesquisa(protocolo)
-        if not linhas:
-            abort(404)
-        p = linhas[0]
-        local = "nacional" if p["abrangencia"] == "BR" else f"{nome_uf(p['abrangencia'])} ({p['abrangencia']})"
-        cargos_txt = " e ".join(l["cargo_nome"].lower() for l in linhas)
-        titulo = f"Pesquisa {p['instituto']} {p['registro']} – 2º turno {cargos_txt} {local}"
-        desc = (f"Pesquisa {p['instituto']} registrada no TSE sob {p['registro']}: 2º turno para {cargos_txt} "
-                f"({local}), coleta de {data_curta(p['periodo_inicio'])} a {data_curta(p['periodo_fim'])}, "
-                f"{num(p['entrevistados'])} entrevistas, margem de erro ±{dec(p['margem_erro'])} pontos.")
-        og = f"{p['cargo']}-{p['abrangencia'].lower()}" if p["abrangencia"] != "BR" else p["cargo"]
-        s = montar_seo(
-            titulo, desc, f"/pesquisas/{slug}", og=og, modificado=p["publicada_em"], tipo_og="article",
-            migalhas=[("Início", "/"), ("Pesquisas", "/pesquisas"), (p["registro"], f"/pesquisas/{slug}")],
-            extras=[seo.dataset_ld(titulo, desc, f"/pesquisas/{slug}", p["publicada_em"],
-                                   "Brasil" if p["abrangencia"] == "BR" else nome_uf(p["abrangencia"]), 1)],
-        )
-        return render_template("pesquisa.html", seo=s, linhas=linhas, p=p)
-
+    @app.route("/pesquisas/<path:slug>")
     @app.route("/metodologia")
-    def metodologia():
-        s = montar_seo(
-            "Metodologia – como calculamos a média das pesquisas registradas no TSE",
-            "Como o Painel das Pesquisas 2026 coleta, valida e publica pesquisas registradas no TSE, como a média "
-            "é calculada e por que algumas pesquisas não aparecem.",
-            "/metodologia", migalhas=[("Início", "/"), ("Metodologia", "/metodologia")],
-        )
-        return render_template("metodologia.html", seo=s, contagens=dados.contagens(),
-                               ultima=db.jloads(db.get_meta("ultima_rodada"), {}))
+    def pesquisas_retiradas(slug=None):
+        return redirect("/", 301)
 
     @app.route("/contato", methods=["GET", "POST"])
     def contato():
         enviado = erro = None
-        prot = protocolo_de_slug(request.values.get("pesquisa", "")) if request.values.get("pesquisa") else None
+        prot = None
         if request.method == "POST":
             exigir_csrf()
             if request.form.get("site"):  # honeypot
@@ -387,12 +297,11 @@ def criar_app() -> Flask:
                     )
                     enviado = True
         s = montar_seo(
-            "Contato e correções – Painel das Pesquisas 2026",
-            "Encontrou um erro? Peça correções de dados de pesquisas registradas no TSE publicadas no Painel das Pesquisas 2026.",
+            f"Contato e correções – {settings.SITE_NOME}",
+            f"Encontrou um erro? Peça correções de dados publicados no {settings.SITE_NOME}.",
             "/contato", migalhas=[("Início", "/"), ("Contato e correções", "/contato")],
         )
-        p_ref = dados.pesquisa(prot)[0] if prot and dados.pesquisa(prot) else None
-        return render_template("contato.html", seo=s, enviado=enviado, erro=erro, prot=prot, p_ref=p_ref)
+        return render_template("contato.html", seo=s, enviado=enviado, erro=erro, prot=None, p_ref=None)
 
     @app.route("/anuncie", methods=["GET", "POST"])
     def anuncie():
@@ -421,8 +330,8 @@ def criar_app() -> Flask:
                     )
                     enviado = True
         s = montar_seo(
-            "Anuncie no Painel das Pesquisas 2026",
-            "Anuncie para o público que acompanha as pesquisas do 2º turno de 2026. Formatos, audiência ao vivo e contato.",
+            f"Anuncie no {settings.SITE_NOME}",
+            "Anuncie para o público que acompanha a apuração do 2º turno de 2026. Formatos, audiência ao vivo e contato.",
             "/anuncie", migalhas=[("Início", "/"), ("Anuncie", "/anuncie")],
         )
         return render_template("anuncie.html", seo=s, enviado=enviado, erro=erro, aud=audiencia.numeros(),
@@ -435,10 +344,9 @@ def criar_app() -> Flask:
         if cargo not in CARGOS or not (UF in UFS or (UF == "BR" and cargo == "presidente")):
             abort(404)
         sem_2t = cargo == "governador" and UF not in dados.ufs_2t_governador()
-        m = None if sem_2t else dados.media(cargo, UF)
         apur = dados.apuracao(cargo, UF) if dados.em_apuracao() and not sem_2t else None
         resp = make_response(render_template(
-            "fragmento_estado.html", cargo=cargo, cargo_nome=CARGOS[cargo]["nome"].lower(), uf=UF, media=m,
+            "fragmento_estado.html", cargo=cargo, cargo_nome=CARGOS[cargo]["nome"].lower(), uf=UF,
             sem_2_turno=sem_2t, apur=apur,
             cands=cand_mod.listar(cargo, "BR" if cargo == "presidente" else UF),
         ))
@@ -600,7 +508,7 @@ def criar_app() -> Flask:
     # ------------------------------------------------------------------ erros
     @app.errorhandler(404)
     def nao_encontrado(e):
-        s = montar_seo("Página não encontrada – Painel das Pesquisas 2026", "Página não encontrada.",
+        s = montar_seo(f"Página não encontrada – {settings.SITE_NOME}", "Página não encontrada.",
                        request.path, robots="noindex, follow")
         return render_template("erro.html", seo=s, codigo=404, mensagem="Página não encontrada."), 404
 

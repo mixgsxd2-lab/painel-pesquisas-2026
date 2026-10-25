@@ -21,7 +21,7 @@ log = logging.getLogger("pipeline.og")
 PASTA = settings.DATA_DIR / "og"
 FONTES = settings.DATA_DIR / "fonts"
 L, A = 1200, 630
-VERSAO = "3"  # mude para forçar a regeração de todas as imagens
+VERSAO = "apuracao-1"  # mude para forçar a regeração de todas as imagens
 
 
 def _baixar_fonte(peso: int) -> str | None:
@@ -125,25 +125,24 @@ def gerar(nome: str, titulo: str, subtitulo: str, destaque: str | None) -> None:
     for linha in _quebrar(subtitulo, f_sub, 600, d)[:3]:
         d.text((60, y), linha, font=f_sub, fill=(255, 255, 255, 160))
         y += 38
-    d.text((60, A - 70), "Somente pesquisas registradas no TSE · 2º turno · 25/10/2026",
+    d.text((60, A - 70), "Resultados oficiais do TSE · 2º turno · 25/10/2026",
            font=_fonte(500, 22), fill=(255, 255, 255, 140))
     img.save(PASTA / f"{nome}.png", "PNG", optimize=True)
 
 
 def alvos() -> list[tuple[str, str, str, str | None]]:
     out = [
-        ("home", "Pesquisas do 2º turno 2026", "Presidente e governadores — média das pesquisas registradas no TSE", "BR"),
-        ("presidente", "Pesquisas para presidente — 2º turno 2026", "Todas registradas no TSE, com margem de erro e instituto", "BR"),
-        ("governador", "Pesquisas para governador — 2º turno 2026", "Estados com 2º turno, só pesquisas registradas no TSE", None),
-        ("pesquisas", "Pesquisas e fontes", "Lista completa das pesquisas registradas no TSE para o 2º turno", None),
-        ("geral", settings.SITE_NOME, "Pesquisas eleitorais registradas no TSE para o 2º turno", None),
+        ("home", "Apuração do 2º turno 2026", "Presidente e governadores — resultados oficiais do TSE", "BR"),
+        ("presidente", "Apuração para presidente — 2º turno 2026", "Resultados oficiais do TSE", "BR"),
+        ("governador", "Apuração para governador — 2º turno 2026", "Estados com 2º turno, resultados oficiais do TSE", None),
+        ("geral", settings.SITE_NOME, "Apuração do 2º turno com resultados oficiais do TSE", None),
     ]
     for uf in UFS:
         nome = nome_uf(uf)
-        out.append((f"presidente-{uf.lower()}", f"Pesquisas para presidente em {nome} ({uf})",
-                    "2º turno 2026 — todas registradas no TSE", uf))
-        out.append((f"governador-{uf.lower()}", f"Pesquisas para governador — {nome} ({uf})",
-                    "2º turno 2026 — todas registradas no TSE", uf))
+        out.append((f"presidente-{uf.lower()}", f"Apuração para presidente em {nome} ({uf})",
+                    "2º turno 2026 — resultados oficiais do TSE", uf))
+        out.append((f"governador-{uf.lower()}", f"Apuração para governador — {nome} ({uf})",
+                    "2º turno 2026 — resultados oficiais do TSE", uf))
     return out
 
 

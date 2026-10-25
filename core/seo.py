@@ -32,7 +32,7 @@ def website_ld() -> dict:
         "name": settings.SITE_NOME,
         "url": abs_url("/"),
         "inLanguage": "pt-BR",
-        "description": "Agregador de pesquisas eleitorais registradas no TSE para o 2º turno de 2026 "
+        "description": "Apuração do 2º turno de 2026 com os resultados oficiais do TSE "
                        "(presidente e governadores).",
     }
 

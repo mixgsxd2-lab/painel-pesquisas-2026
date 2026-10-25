@@ -52,20 +52,17 @@
   <div class="topo-in glass">
     <a class="marca" href="/" aria-label="{{ SITE_NOME }} — página inicial">
       <svg class="marca-ico" viewBox="0 0 32 32" width="28" height="28" aria-hidden="true"><defs><linearGradient id="lg-marca" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#C4B5FD"/><stop offset="1" stop-color="#7C6CF2"/></linearGradient></defs><rect x="2" y="2" width="28" height="28" rx="8" fill="url(#lg-marca)"/><path d="M9 21V14M14 21V10M19 21v-5M24 21V12" stroke="#0B0C14" stroke-width="2.6" stroke-linecap="round"/></svg>
-      <span class="marca-txt">Painel das Pesquisas <b>2026</b></span>
+      <span class="marca-txt">Painel da Apuração <b>2026</b></span>
     </a>
     {% set atual = request.path %}
     <nav class="menu" aria-label="Principal">
       <a href="/" {% if atual == '/' or atual.startswith('/presidente') or atual.startswith('/governador') %}aria-current="page"{% endif %}>Mapa</a>
-      <a href="/pesquisas" {% if atual.startswith('/pesquisas') %}aria-current="page"{% endif %}>Pesquisas</a>
-      <a href="/metodologia" {% if atual == '/metodologia' %}aria-current="page"{% endif %}>Metodologia</a>
       <a href="/anuncie" {% if atual == '/anuncie' %}aria-current="page"{% endif %}>Anuncie</a>
     </nav>
     {% if EM_APURACAO %}<span class="badge-apuracao"><i class="pulso"></i>Apuração</span>{% endif %}
   </div>
 </header>
 
-{% if atualizando() %}<p class="aviso-atualizando" role="status"><i class="pulso"></i><span>Os dados estão sendo atualizados com a base do TSE agora. Recarregue em alguns minutos para ver as novidades.</span></p>{% endif %}
 <main id="conteudo">
 {% block conteudo %}{% endblock %}
 </main>
@@ -74,27 +71,25 @@
   <div class="rodape-in">
     <div class="rodape-col">
       <p class="rodape-marca">{{ SITE_NOME }}</p>
-      <p>Agregador independente de pesquisas eleitorais registradas no Tribunal Superior Eleitoral para o 2º turno de 25/10/2026.</p>
+      <p>Acompanhamento independente da apuração do 2º turno de 25/10/2026 com os resultados oficiais do Tribunal Superior Eleitoral.</p>
       {% set at = atualizado_global() %}
       <p class="atualizado"><i class="pulso"></i> Atualizado em <time datetime="{{ at or '' }}">{{ at|datahora_br if at else '—' }}</time></p>
     </div>
     <nav class="rodape-col" aria-label="Rodapé">
       <a href="/presidente">Presidente</a>
       <a href="/governador">Governador</a>
-      <a href="/pesquisas">Pesquisas e fontes</a>
-      <a href="/metodologia">Metodologia</a>
       <a href="/contato">Contato e correções</a>
       <a href="/anuncie">Anuncie</a>
     </nav>
     <div class="rodape-col">
-      <p>Dados: <a href="https://dadosabertos.tse.jus.br/dataset/pesquisas-eleitorais-2026" rel="noopener" target="_blank">Portal de Dados Abertos do TSE</a>, <a href="https://resultados.tse.jus.br" rel="noopener" target="_blank">Resultados TSE</a> e malhas do <a href="https://servicodados.ibge.gov.br/api/docs/malhas?versao=3" rel="noopener" target="_blank">IBGE</a>.</p>
+      <p>Dados: <a href="https://resultados.tse.jus.br" rel="noopener" target="_blank">Resultados TSE</a> e malhas do <a href="https://servicodados.ibge.gov.br/api/docs/malhas?versao=3" rel="noopener" target="_blank">IBGE</a>.</p>
       <p>Correções: <a href="mailto:{{ EMAIL_CONTATO }}">{{ EMAIL_CONTATO }}</a></p>
     </div>
   </div>
 </footer>
 
 <div class="aviso-fixo" role="note">
-  <p>Este site apenas reproduz pesquisas registradas na Justiça Eleitoral. Não realiza pesquisas próprias. Médias são cálculos simples sobre pesquisas registradas e não são previsão de resultado.</p>
+  <p>Este site reproduz os resultados oficiais divulgados pelo TSE em resultados.tse.jus.br. Os números valem até a totalização final.</p>
 </div>
 
 <script src="{{ static_v('js/app.js') }}" defer></script>

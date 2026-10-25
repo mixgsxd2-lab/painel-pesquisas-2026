@@ -269,16 +269,6 @@ def mapa(cargo: str) -> dict:
                         item["intensidade"] = min(1.0, 0.25 + item["vantagem"] / 20)
                     estados.append(item)
                     continue
-            m = media(cargo, uf)
-            if m:
-                frente = max(m["itens"], key=lambda i: i["valor"])
-                item.update({"status": "com_pesquisas", "vantagem": m["vantagem"], "n": m["n_pesquisas"],
-                             "tipo": m["tipo"], "pct_lider": frente["valor"]})
-                if m["lider"]:
-                    item.update({"lider": m["lider"]["rotulo"], "lider_cor": m["lider"]["cor"], "cor": m["lider"]["cor"]})
-                    item["intensidade"] = min(1.0, 0.25 + m["vantagem"] / 20)
-                else:
-                    item["status"] = "empate"
             estados.append(item)
         return {"cargo": cargo, "apuracao": apur, "estados": estados}
 
