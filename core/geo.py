@@ -7,24 +7,37 @@ from functools import lru_cache
 
 import settings
 
-ARQUIVO = settings.DATA_DIR / "geo" / "br_uf.json"
+BAIXADO = settings.DATA_DIR / "geo" / "br_uf.json"
+# cópia guardada no repositório: o mapa funciona mesmo com disco vazio (Render gratuito) ou IBGE fora do ar
+RESERVA = settings.CONFIG_DIR / "br_uf.json"
+
+
+def arquivo():
+    return BAIXADO if BAIXADO.exists() else RESERVA
+
+
 LAT0 = -15.0
 COS0 = math.cos(math.radians(LAT0))
 
 
 def disponivel() -> bool:
-    return ARQUIVO.exists()
+    return arquivo().exists()
 
 
 @lru_cache(maxsize=2)
-def _carregar(mtime: float) -> dict:
-    return json.loads(ARQUIVO.read_text(encoding="utf-8"))
+def _carregar(mtime: float, caminho: str = "") -> dict:
+    return json.loads(arquivo().read_text(encoding="utf-8"))
+
+
+def _chave() -> tuple[float, str]:
+    a = arquivo()
+    return a.stat().st_mtime, str(a)
 
 
 def geojson() -> dict | None:
-    if not ARQUIVO.exists():
+    if not disponivel():
         return None
-    return _carregar(ARQUIVO.stat().st_mtime)
+    return _carregar(*_chave())
 
 
 def _poligonos(geom: dict) -> list[list[list[list[float]]]]:
@@ -40,8 +53,8 @@ def _proj(lon: float, lat: float) -> tuple[float, float]:
 
 
 @lru_cache(maxsize=4)
-def _projetado(mtime: float, largura: int, altura: int, margem: int):
-    gj = _carregar(mtime)
+def _projetado(mtime: float, caminho: str, largura: int, altura: int, margem: int):
+    gj = _carregar(mtime, caminho)
     pts = [
         _proj(*c)
         for f in gj["features"]
@@ -78,9 +91,9 @@ def _projetado(mtime: float, largura: int, altura: int, margem: int):
 
 
 def projetado(largura: int = 1000, altura: int = 1000, margem: int = 10) -> dict:
-    if not ARQUIVO.exists():
+    if not disponivel():
         return {}
-    return _projetado(ARQUIVO.stat().st_mtime, largura, altura, margem)
+    return _projetado(*_chave(), largura, altura, margem)
 
 
 def caminhos_svg(largura: int = 1000, altura: int = 1000) -> dict[str, str]:
